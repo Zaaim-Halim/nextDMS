@@ -160,6 +160,10 @@ server:
     session:
       cookie:
         http-only: true
+  http2:
+    enabled: true
+  compression:
+    enabled: true
 
 springdoc:
   show-actuator: true
@@ -210,5 +214,4 @@ jhipster:
 # More documentation is available at:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
-
 # application:
