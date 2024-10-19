@@ -89,6 +89,8 @@
     "bootstrap": "5.3.3",
     "dayjs": "1.11.13",
     "ngx-infinite-scroll": "18.0.0",
+    "primeflex": "^3.3.1",
+    "primeicons": "^7.0.0",
     "primeng": "^17.18.11",
     "rxjs": "7.8.1",
     "tslib": "2.7.0",
@@ -97,7 +99,7 @@
   "devDependencies": {
     "@angular-builders/custom-webpack": "18.0.0",
     "@angular-builders/jest": "18.0.0",
-    "@angular-devkit/build-angular": "18.2.1",
+    "@angular-devkit/build-angular": "^18.2.9",
     "@angular/cli": "18.2.1",
     "@angular/compiler-cli": "18.2.1",
     "@angular/service-worker": "18.2.1",
