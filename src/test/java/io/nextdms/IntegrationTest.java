@@ -1,8 +1,9 @@
 package io.nextdms;
 
-import io.nextdms.config.AsyncSyncConfiguration;
-import io.nextdms.config.EmbeddedSQL;
-import io.nextdms.config.JacksonConfiguration;
+import io.nextdms.app.NextDmsApp;
+import io.nextdms.app.config.AsyncSyncConfiguration;
+import io.nextdms.app.config.EmbeddedSQL;
+import io.nextdms.app.config.JacksonConfiguration;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

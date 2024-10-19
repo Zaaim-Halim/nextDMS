@@ -8,6 +8,9 @@ import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import io.nextdms.app.NextDmsApp;
+import io.nextdms.app.config.ApplicationProperties;
+import io.nextdms.app.config.Constants;
 
 @AnalyzeClasses(packagesOf = NextDmsApp.class, importOptions = DoNotIncludeTests.class)
 class TechnicalStructureTest {
@@ -32,7 +35,7 @@ class TechnicalStructureTest {
 
         .ignoreDependency(belongToAnyOf(NextDmsApp.class), alwaysTrue())
         .ignoreDependency(alwaysTrue(), belongToAnyOf(
-            io.nextdms.config.Constants.class,
-            io.nextdms.config.ApplicationProperties.class
+            Constants.class,
+            ApplicationProperties.class
         ));
 }

@@ -22,6 +22,7 @@
             Build properties
             The spring-boot version should match the one managed by https://mvnrepository.com/artifact/tech.jhipster/jhipster-dependencies/${jhipster-dependencies.version}
         -->
+        <oak.version>1.70.0</oak.version>
         <maven.version>3.2.5</maven.version>
         <java.version>17</java.version>
         <node.version>v20.17.0</node.version>
@@ -31,7 +32,7 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <start-class>io.nextdms.NextDmsApp</start-class>
+        <start-class>io.nextdms.app.NextDmsApp</start-class>
         <argLine>-Djava.security.egd=file:/dev/./urandom -Xmx1G</argLine>
         <m2e.apt.activation>jdt_apt</m2e.apt.activation>
         <run.addResources>false</run.addResources>
@@ -181,6 +182,18 @@
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
+        <dependency>
+          <groupId>org.apache.jackrabbit</groupId>
+          <artifactId>oak-core</artifactId>
+          <version>${oak.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.jackrabbit</groupId>
+          <artifactId>oak-store-document</artifactId>
+          <version>${oak.version}</version>
+        </dependency>
+
+      <!--      ################# TESTS ###############        -->
         <dependency>
             <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit5-api</artifactId>
