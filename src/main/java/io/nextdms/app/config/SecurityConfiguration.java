@@ -35,13 +35,13 @@ import tech.jhipster.web.filter.CookieCsrfFilter;
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfiguration {
 
-    private final JHipsterProperties jHipsterProperties;
+    private final JHipsterProperties secConfigProperties;
 
     private final RememberMeServices rememberMeServices;
 
     public SecurityConfiguration(RememberMeServices rememberMeServices, JHipsterProperties jHipsterProperties) {
         this.rememberMeServices = rememberMeServices;
-        this.jHipsterProperties = jHipsterProperties;
+        this.secConfigProperties = jHipsterProperties;
     }
 
     @Bean
@@ -62,7 +62,7 @@ public class SecurityConfiguration {
             .addFilterAfter(new CookieCsrfFilter(), BasicAuthenticationFilter.class)
             .headers(headers ->
                 headers
-                    .contentSecurityPolicy(csp -> csp.policyDirectives(jHipsterProperties.getSecurity().getContentSecurityPolicy()))
+                    .contentSecurityPolicy(csp -> csp.policyDirectives(secConfigProperties.getSecurity().getContentSecurityPolicy()))
                     .frameOptions(FrameOptionsConfig::sameOrigin)
                     .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                     .permissionsPolicy(permissions ->
@@ -98,7 +98,7 @@ public class SecurityConfiguration {
                 rememberMe
                     .rememberMeServices(rememberMeServices)
                     .rememberMeParameter("remember-me")
-                    .key(jHipsterProperties.getSecurity().getRememberMe().getKey())
+                    .key(secConfigProperties.getSecurity().getRememberMe().getKey())
             )
             .exceptionHandling(exceptionHanding ->
                 exceptionHanding.defaultAuthenticationEntryPointFor(
