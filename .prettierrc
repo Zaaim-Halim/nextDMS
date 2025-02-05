@@ -3,7 +3,10 @@ singleQuote: true
 tabWidth: 2
 useTabs: false
 arrowParens: avoid
-bracketSameLine: false
+bracketSameLine: true
+bracketSpacing: true
+semi: true  # Ensure semicolons are used
+endOfLine: auto
 plugins:
   - prettier-plugin-packagejson
   - prettier-plugin-java
