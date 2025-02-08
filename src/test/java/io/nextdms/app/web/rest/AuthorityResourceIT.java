@@ -1,5 +1,6 @@
 package io.nextdms.app.web.rest;
 
+import static io.nextdms.app.domain.AuthorityAsserts.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
