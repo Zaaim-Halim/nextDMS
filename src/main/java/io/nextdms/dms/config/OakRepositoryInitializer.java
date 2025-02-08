@@ -2,8 +2,8 @@ package io.nextdms.dms.config;
 
 import static org.apache.jackrabbit.JcrConstants.*;
 import static org.apache.jackrabbit.oak.api.Type.NAME;
-import static org.apache.jackrabbit.oak.plugins.index.IndexConstants.INDEX_DEFINITIONS_NODE_TYPE;
-import static org.apache.jackrabbit.oak.plugins.index.IndexConstants.TYPE_PROPERTY_NAME;
+import static org.apache.jackrabbit.oak.plugins.index.IndexConstants.*;
+import static org.apache.jackrabbit.oak.plugins.index.IndexConstants.INDEX_DEFINITIONS_NAME;
 import static org.apache.jackrabbit.oak.plugins.memory.ModifiedNodeState.squeeze;
 import static org.apache.jackrabbit.oak.spi.nodetype.NodeTypeConstants.*;
 import static org.apache.jackrabbit.oak.spi.version.VersionConstants.REP_VERSIONSTORAGE;
@@ -12,7 +12,10 @@ import static org.apache.jackrabbit.oak.spi.version.VersionConstants.VERSION_STO
 import com.sun.istack.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.jackrabbit.oak.InitialContent;
 import org.apache.jackrabbit.oak.api.PropertyState;
 import org.apache.jackrabbit.oak.api.Root;
@@ -21,6 +24,7 @@ import org.apache.jackrabbit.oak.plugins.index.IndexConstants;
 import org.apache.jackrabbit.oak.plugins.index.IndexUtils;
 import org.apache.jackrabbit.oak.plugins.index.counter.NodeCounterEditorProvider;
 import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexConstants;
+import org.apache.jackrabbit.oak.plugins.index.lucene.util.LuceneIndexHelper;
 import org.apache.jackrabbit.oak.plugins.memory.MemoryNodeStore;
 import org.apache.jackrabbit.oak.plugins.name.Namespaces;
 import org.apache.jackrabbit.oak.plugins.nodetype.write.NodeTypeRegistry;
@@ -31,9 +35,14 @@ import org.apache.jackrabbit.oak.spi.state.NodeBuilder;
 import org.apache.jackrabbit.oak.spi.state.NodeState;
 import org.apache.jackrabbit.oak.spi.state.NodeStore;
 import org.apache.jackrabbit.oak.spi.version.VersionConstants;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+//https://github.com/apache/sling-org-apache-sling-jcr-oak-server/blob/master/src/main/java/org/apache/sling/jcr/oak/server/internal/index/LuceneIndexRepositoryInitializer.java
 public class OakRepositoryInitializer implements RepositoryInitializer {
 
+    private final Logger logger = LoggerFactory.getLogger(OakRepositoryInitializer.class);
     /**
      * Whether to pre-populate the version store with intermediate nodes.
      */
@@ -94,28 +103,14 @@ public class OakRepositoryInitializer implements RepositoryInitializer {
                 );
 
             // lucen index for full text search
-
-            if (!index.hasChildNode("lucene")) {
-                NodeBuilder lucenindex = index.child("lucene");
-
-                lucenindex.setProperty(IndexConstants.TYPE_PROPERTY_NAME, LuceneIndexConstants.TYPE_LUCENE);
-                lucenindex.setProperty(IndexConstants.REINDEX_PROPERTY_NAME, true);
-                lucenindex.setProperty(IndexConstants.ASYNC_PROPERTY_NAME, "async");
-
-                NodeBuilder indexRules = index.child(LuceneIndexConstants.INDEX_RULES);
-                NodeBuilder ntBase = indexRules.child("nt:base");
-                ntBase.setProperty(LuceneIndexConstants.INDEX_NODE_NAME, "nt:base");
-
-                NodeBuilder properties = ntBase.child(LuceneIndexConstants.PROP_NODE);
-                NodeBuilder allProps = properties.child("allProps");
-                allProps.setProperty("propertyName", "propertyName");
-                allProps.setProperty(LuceneIndexConstants.PROP_IS_REGEX, true);
-                allProps.setProperty(LuceneIndexConstants.PROP_NODE_SCOPE_INDEX, true);
-                allProps.setProperty(LuceneIndexConstants.PROP_ANALYZED, true);
-                allProps.setProperty(LuceneIndexConstants.PROP_USE_IN_EXCERPT, true);
-                allProps.setProperty(LuceneIndexConstants.PROP_PROPERTY_INDEX, true);
-                lucenindex.setProperty("info", "Oak Lucen index that  that enables full-text search.");
-            }
+            if (!index.hasChildNode(LuceneIndexConstants.TYPE_LUCENE)) logger.debug("adding new Lucene index definition");
+            LuceneIndexHelper.newLuceneIndexDefinition(
+                index,
+                LuceneIndexConstants.TYPE_LUCENE,
+                this.includePropertyTypes(),
+                this.excludePropertyNames(),
+                "async"
+            );
         }
 
         // squeeze node state before it is passed to store (OAK-2411)
@@ -168,5 +163,14 @@ public class OakRepositoryInitializer implements RepositoryInitializer {
         } catch (IOException e) {
             throw new IllegalStateException("Unable to read built-in node types", e);
         }
+    }
+
+    //TODO: change this to be configuralbe
+    private Set<String> includePropertyTypes() {
+        return Set.of("String", "Binary");
+    }
+
+    private Set<String> excludePropertyNames() {
+        return Set.of("jcr:createdBy", "jcr:lastModifiedBy", "sling:alias", "sling:resourceType", "sling:vanityPath");
     }
 }
