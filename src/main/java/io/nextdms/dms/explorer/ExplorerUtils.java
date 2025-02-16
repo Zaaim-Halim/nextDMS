@@ -117,4 +117,45 @@ public class ExplorerUtils {
         }
         return jcrValue;
     }
+
+    public static void setNodeProperty(Node node, String name, JcrProperty prop) throws RepositoryException {
+        if (prop.multiValue()) {
+            Value[] values = Arrays.stream(prop.values())
+                .map(jcrValue -> {
+                    try {
+                        return node.getSession().getValueFactory().createValue(jcrValue.getStringValue(), prop.type());
+                    } catch (RepositoryException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toArray(Value[]::new);
+            node.setProperty(name, values);
+        } else {
+            JcrValue jcrValue = prop.values()[0];
+            switch (prop.type()) {
+                case PropertyType.BOOLEAN:
+                    node.setProperty(name, jcrValue.getBooleanValue());
+                    break;
+                case PropertyType.DATE:
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(jcrValue.getDateValue());
+                    node.setProperty(name, calendar);
+                    break;
+                case PropertyType.DECIMAL:
+                    node.setProperty(name, jcrValue.getDecimalValue());
+                    break;
+                case PropertyType.DOUBLE:
+                    node.setProperty(name, jcrValue.getDoubleValue());
+                    break;
+                case PropertyType.LONG:
+                    node.setProperty(name, jcrValue.getLongValue());
+                    break;
+                case PropertyType.STRING:
+                    node.setProperty(name, jcrValue.getStringValue());
+                    break;
+                default:
+                    throw new RepositoryException("Unsupported property type: " + prop.type());
+            }
+        }
+    }
 }
