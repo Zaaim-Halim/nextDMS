@@ -1,7 +1,5 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { InputTextModule } from 'primeng/inputtext';
 import { SidebarModule } from 'primeng/sidebar';
 import { BadgeModule } from 'primeng/badge';
@@ -12,31 +10,27 @@ import { AppLayoutComponent } from './app.layout.component';
 import { AppMenuitemComponent } from '../menuitem/menuitem.component';
 import { AppTopBarComponent } from '../topbar/topbar.component';
 import { AppMenuComponent } from '../menu/menu.component';
-import { RouterModule } from '@angular/router';
+import { RouterModule, RouterOutlet } from '@angular/router';
 import { AppConfigModule } from '../config/config.module';
 import { AppSidebarComponent } from '../sidebar/sidebar.component';
 import FooterComponent from '../footer/footer.component';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
-  declarations: [AppLayoutComponent],
+  declarations: [AppLayoutComponent, AppSidebarComponent, AppMenuitemComponent, AppTopBarComponent, AppMenuComponent, FooterComponent],
   imports: [
-    BrowserModule,
     FormsModule,
-    BrowserAnimationsModule,
+    CommonModule,
     InputTextModule,
     SidebarModule,
     BadgeModule,
     RadioButtonModule,
     InputSwitchModule,
     RippleModule,
-    RouterModule,
     AppConfigModule,
-    AppMenuitemComponent,
-    AppTopBarComponent,
-    AppMenuComponent,
-    AppSidebarComponent,
-    FooterComponent,
+    RouterOutlet,
+    RouterModule,
   ],
-  exports: [AppLayoutComponent],
+  exports: [AppLayoutComponent, FooterComponent],
 })
 export class AppLayoutModule {}

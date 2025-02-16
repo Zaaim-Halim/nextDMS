@@ -12,7 +12,6 @@ import { Ripple } from 'primeng/ripple';
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: '[app-menuitem]',
   templateUrl: './menuitem.component.html',
-  standalone: true,
   animations: [
     trigger('children', [
       state(
@@ -30,7 +29,6 @@ import { Ripple } from 'primeng/ripple';
       transition('collapsed <=> expanded', animate('400ms cubic-bezier(0.86, 0, 0.07, 1)')),
     ]),
   ],
-  imports: [SharedModule, Ripple, RouterLink, RouterLinkActive],
 })
 export class AppMenuitemComponent implements OnInit, OnDestroy {
   @Input() item: any;

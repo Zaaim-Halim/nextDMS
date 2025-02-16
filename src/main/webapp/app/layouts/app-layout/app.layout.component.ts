@@ -1,20 +1,26 @@
-import { Component, OnDestroy, Renderer2, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { filter, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { AppSidebarComponent } from '../sidebar/sidebar.component';
 import { AppTopBarComponent } from '../topbar/topbar.component';
 import { LayoutService } from '../service/layout.service';
+import { filter } from 'rxjs/operators';
+import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
+import dayjs from 'dayjs/esm';
+import { AccountService } from '../../core/auth/account.service';
+import { AppPageTitleStrategy } from '../../app-page-title-strategy';
 
 @Component({
   selector: 'app-layout',
   templateUrl: './app.layout.component.html',
 })
-export class AppLayoutComponent implements OnDestroy {
+export class AppLayoutComponent implements OnInit, OnDestroy {
   overlayMenuOpenSubscription: Subscription;
-
-  menuOutsideClickListener: any;
-
+  accountService = inject(AccountService);
+  translateService = inject(TranslateService);
+  appPageTitleStrategy = inject(AppPageTitleStrategy);
   profileMenuOutsideClickListener: any;
+  menuOutsideClickListener: any;
 
   @ViewChild(AppSidebarComponent) appSidebar!: AppSidebarComponent;
 
@@ -66,7 +72,14 @@ export class AppLayoutComponent implements OnDestroy {
       this.hideProfileMenu();
     });
   }
-
+  ngOnInit(): void {
+    this.accountService.identity().subscribe();
+    this.translateService.onLangChange.subscribe((langChangeEvent: LangChangeEvent) => {
+      this.appPageTitleStrategy.updateTitle(this.router.routerState.snapshot);
+      dayjs.locale(langChangeEvent.lang);
+      this.renderer.setAttribute(document.querySelector('html'), 'lang', langChangeEvent.lang);
+    });
+  }
   hideMenu(): void {
     this.layoutService.state.overlayMenuActive = false;
     this.layoutService.state.staticMenuMobileActive = false;

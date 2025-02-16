@@ -6,9 +6,7 @@ import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-topbar',
-  standalone: true,
   templateUrl: './topbar.component.html',
-  imports: [RouterLink, NgClass],
 })
 export class AppTopBarComponent {
   items!: MenuItem[];

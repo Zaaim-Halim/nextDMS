@@ -8,16 +8,13 @@ import locale from '@angular/common/locales/en';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { fontAwesomeIcons } from './config/font-awesome-icons';
-import MainComponent from './layouts/main/main.component';
+import { AppLayoutModule } from './layouts/app-layout/app.layout.module';
 
 @Component({
   standalone: true,
   selector: 'jhi-app',
-  template: '<jhi-main></jhi-main>',
-  imports: [
-    MainComponent,
-    // jhipster-needle-angular-add-module JHipster will add new module herey
-  ],
+  template: ' <app-layout></app-layout>',
+  imports: [AppLayoutModule],
 })
 export default class AppComponent {
   private applicationConfigService = inject(ApplicationConfigService);
