@@ -2,11 +2,13 @@ import { OnInit } from '@angular/core';
 import { Component } from '@angular/core';
 import { LayoutService } from '../service/layout.service';
 import { AppMenuitemComponent } from '../menuitem/menuitem.component';
+import { NgIf } from '@angular/common';
+import SharedModule from '../../shared/shared.module';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [AppMenuitemComponent],
+  imports: [AppMenuitemComponent, SharedModule],
   templateUrl: './menu.component.html',
 })
 export class AppMenuComponent implements OnInit {
@@ -14,7 +16,7 @@ export class AppMenuComponent implements OnInit {
 
   constructor(public layoutService: LayoutService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.model = [
       {
         label: 'Home',

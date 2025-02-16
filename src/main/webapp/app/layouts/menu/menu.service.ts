@@ -6,17 +6,17 @@ import { MenuChangeEvent } from '../api/menuchangeevent';
   providedIn: 'root',
 })
 export class MenuService {
-  private menuSource = new Subject<MenuChangeEvent>();
-  private resetSource = new Subject();
+  menuSource = new Subject<MenuChangeEvent>();
+  resetSource = new Subject();
 
   menuSource$ = this.menuSource.asObservable();
   resetSource$ = this.resetSource.asObservable();
 
-  onMenuStateChange(event: MenuChangeEvent) {
+  onMenuStateChange(event: MenuChangeEvent): void {
     this.menuSource.next(event);
   }
 
-  reset() {
+  reset(): void {
     this.resetSource.next(true);
   }
 }

@@ -7,7 +7,7 @@ import { MenuService } from '../service/menu.service';
   templateUrl: './config.component.html',
 })
 export class ConfigComponent {
-  @Input() minimal: boolean = false;
+  @Input() minimal = false;
 
   scales: number[] = [12, 13, 14, 15, 16];
 
@@ -80,20 +80,20 @@ export class ConfigComponent {
     return this.layoutService.config().colorScheme;
   }
 
-  onConfigButtonClick() {
+  onConfigButtonClick(): void {
     this.layoutService.showConfigSidebar();
   }
 
-  changeTheme(theme: string, colorScheme: string) {
+  changeTheme(theme: string, colorScheme: string): void {
     this.theme = theme;
     this.colorScheme = colorScheme;
   }
 
-  decrementScale() {
+  decrementScale(): void {
     this.scale--;
   }
 
-  incrementScale() {
+  incrementScale(): void {
     this.scale++;
   }
 }

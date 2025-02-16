@@ -4,7 +4,7 @@ import { LayoutService } from '../service/layout.service';
 
 @Component({
   standalone: true,
-  selector: 'jhi-footer',
+  selector: 'app-footer',
   templateUrl: './footer.component.html',
   imports: [TranslateDirective],
 })
