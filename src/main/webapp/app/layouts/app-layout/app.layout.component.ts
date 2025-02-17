@@ -1,5 +1,5 @@
 import { Component, inject, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AppSidebarComponent } from '../sidebar/sidebar.component';
 import { AppTopBarComponent } from '../topbar/topbar.component';
@@ -22,6 +22,10 @@ export class AppLayoutComponent implements OnInit, OnDestroy {
   profileMenuOutsideClickListener: any;
   menuOutsideClickListener: any;
 
+  showTopBar = false;
+  showSideBar = false;
+  showFooter = false;
+
   @ViewChild(AppSidebarComponent) appSidebar!: AppSidebarComponent;
 
   @ViewChild(AppTopBarComponent) appTopbar!: AppTopBarComponent;
@@ -30,6 +34,7 @@ export class AppLayoutComponent implements OnInit, OnDestroy {
     public layoutService: LayoutService,
     public renderer: Renderer2,
     public router: Router,
+    private activatedRoute: ActivatedRoute,
   ) {
     this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
       if (!this.menuOutsideClickListener) {
@@ -73,6 +78,13 @@ export class AppLayoutComponent implements OnInit, OnDestroy {
     });
   }
   ngOnInit(): void {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.showTopBar = this.activatedRoute.firstChild?.snapshot.data.showTopBar !== false;
+        this.showSideBar = this.activatedRoute.firstChild?.snapshot.data.showSideBar !== false;
+        this.showFooter = this.activatedRoute.firstChild?.snapshot.data.showFooter !== false;
+      }
+    });
     this.accountService.identity().subscribe();
     this.translateService.onLangChange.subscribe((langChangeEvent: LangChangeEvent) => {
       this.appPageTitleStrategy.updateTitle(this.router.routerState.snapshot);

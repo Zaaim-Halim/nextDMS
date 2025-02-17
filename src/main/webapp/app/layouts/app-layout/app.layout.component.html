@@ -1,14 +1,24 @@
-<div class="layout-wrapper" [ngClass]="containerClass">
-  <app-topbar></app-topbar>
-  <div class="layout-sidebar">
-    <app-sidebar></app-sidebar>
-  </div>
-  <div class="layout-main-container">
+@if (!this.showTopBar && !this.showSideBar && this.showFooter) {
+  <div class="layout-wrapper" [ngClass]="containerClass">
     <div class="layout-main">
       <router-outlet></router-outlet>
     </div>
-    <app-footer></app-footer>
+    <app-footer *ngIf="showFooter"></app-footer>
   </div>
-  <app-config></app-config>
-  <div class="layout-mask"></div>
-</div>
+} @else {
+  <
+  <div class="layout-wrapper" [ngClass]="containerClass">
+    <app-topbar *ngIf="showTopBar"></app-topbar>
+    <div *ngIf="showSideBar" class="layout-sidebar">
+      <app-sidebar></app-sidebar>
+    </div>
+    <div class="layout-main-container">
+      <div class="layout-main">
+        <router-outlet></router-outlet>
+      </div>
+      <app-footer *ngIf="showFooter"></app-footer>
+    </div>
+    <app-config *ngIf="showTopBar && showSideBar"></app-config>
+    <div class="layout-mask"></div>
+  </div>
+}
