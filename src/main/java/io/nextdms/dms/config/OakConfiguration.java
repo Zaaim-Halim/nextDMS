@@ -12,11 +12,13 @@ import org.apache.jackrabbit.oak.spi.blob.BlobStore;
 import org.apache.jackrabbit.oak.spi.commit.WhiteboardEditorProvider;
 import org.apache.jackrabbit.oak.spi.query.WhiteboardIndexProvider;
 import org.apache.jackrabbit.oak.spi.state.NodeStore;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
+@EnableConfigurationProperties(OakProperties.class)
 public class OakConfiguration {
 
     @Bean
