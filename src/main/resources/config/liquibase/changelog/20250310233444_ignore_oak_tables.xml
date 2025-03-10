@@ -1,0 +1,51 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="halimzaaim (generated)" id="1741649686531-1">
+      <preConditions onFail="MARK_RAN">
+        <not>
+          <tableExists tableName="JOURNAL"/>
+        </not>
+      </preConditions>
+      <dropTable tableName="JOURNAL"/>
+    </changeSet>
+    <changeSet author="halimzaaim (generated)" id="1741649686531-2">
+      <preConditions onFail="MARK_RAN">
+        <not>
+          <tableExists tableName="DATASTORE_META"/>
+        </not>
+      </preConditions>
+      <dropTable tableName="DATASTORE_META"/>
+    </changeSet>
+  <changeSet author="halimzaaim (generated)" id="1741649686531-3">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="DATASTORE_DATA"/>
+      </not>
+    </preConditions>
+    <dropTable tableName="DATASTORE_DATA"/>
+  </changeSet>
+  <changeSet author="halimzaaim (generated)" id="1741649686531-4">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="SETTINGS"/>
+      </not>
+    </preConditions>
+    <dropTable tableName="SETTINGS"/>
+  </changeSet>
+  <changeSet author="halimzaaim (generated)" id="1741649686531-5">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="NODES"/>
+      </not>
+    </preConditions>
+    <dropTable tableName="NODES"/>
+  </changeSet>
+  <changeSet author="halimzaaim (generated)" id="1741649686531-6">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="CLUSTERNODES"/>
+      </not>
+    </preConditions>
+    <dropTable tableName="CLUSTERNODES"/>
+  </changeSet>
+</databaseChangeLog>

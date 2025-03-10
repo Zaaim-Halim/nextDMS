@@ -833,6 +833,7 @@
                 <liquibase-plugin.password/>
                 <liquibase-plugin.url>jdbc:mysql://localhost:3306/nextDms</liquibase-plugin.url>
                 <liquibase-plugin.username>root</liquibase-plugin.username>
+                <liquibase-plugin.password>halim1993</liquibase-plugin.password>
                 <profile.test>testdev</profile.test>
                 <spring.profiles.active>dev${profile.tls}${profile.no-liquibase}</spring.profiles.active>
             </properties>
@@ -941,6 +942,7 @@
                 <liquibase-plugin.password/>
                 <liquibase-plugin.url>jdbc:mysql://localhost:3306/nextDms</liquibase-plugin.url>
                 <liquibase-plugin.username>root</liquibase-plugin.username>
+                <liquibase-plugin.password>halim1993</liquibase-plugin.password>
                 <profile.test>testprod</profile.test>
                 <spring.profiles.active>prod${profile.api-docs}${profile.tls}${profile.e2e}${profile.no-liquibase}</spring.profiles.active>
             </properties>

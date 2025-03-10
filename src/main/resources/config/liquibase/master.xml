@@ -22,4 +22,6 @@
    <property name="jsonType" value="JSON" dbms="mysql,postgresql"/>
 
     <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250310233444_ignore_oak_tables.xml" relativeToChangelogFile="false"/>
+
 </databaseChangeLog>
