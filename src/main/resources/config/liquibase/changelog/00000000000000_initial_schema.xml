@@ -11,7 +11,7 @@
         The initial schema has the '00000000000001' id, so that it is over-written if we re-generate it.
     -->
     <changeSet id="00000000000001" author="jhipster">
-        <createTable tableName="jhi_user">
+        <createTable tableName="USER">
             <column name="id" type="bigint" autoIncrement="true" startWith="1050">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -42,13 +42,13 @@
             <column name="last_modified_date" type="timestamp"/>
         </createTable>
 
-        <createTable tableName="jhi_authority">
+        <createTable tableName="AUTHORITY">
             <column name="name" type="varchar(50)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
 
-        <createTable tableName="jhi_user_authority">
+        <createTable tableName="USER_AUTHORITY">
             <column name="user_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
@@ -57,9 +57,9 @@
             </column>
         </createTable>
 
-        <addPrimaryKey columnNames="user_id, authority_name" tableName="jhi_user_authority"/>
+        <addPrimaryKey columnNames="user_id, authority_name" tableName="USER_AUTHORITY"/>
 
-        <createTable tableName="jhi_persistent_token">
+        <createTable tableName="PERSISTENT_TOKEN">
             <column name="series" type="varchar(20)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -73,37 +73,37 @@
         </createTable>
 
         <addForeignKeyConstraint baseColumnNames="authority_name"
-                                 baseTableName="jhi_user_authority"
+                                 baseTableName="USER_AUTHORITY"
                                  constraintName="fk_authority_name"
                                  referencedColumnNames="name"
-                                 referencedTableName="jhi_authority"/>
+                                 referencedTableName="AUTHORITY"/>
 
         <addForeignKeyConstraint baseColumnNames="user_id"
-                                 baseTableName="jhi_user_authority"
+                                 baseTableName="USER_AUTHORITY"
                                  constraintName="fk_user_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="jhi_user"/>
+                                 referencedTableName="USER"/>
 
         <addNotNullConstraint   columnName="password_hash"
                                 columnDataType="varchar(60)"
-                                tableName="jhi_user"/>
+                                tableName="USER"/>
 
         <addForeignKeyConstraint baseColumnNames="user_id"
-                                 baseTableName="jhi_persistent_token"
+                                 baseTableName="PERSISTENT_TOKEN"
                                  constraintName="fk_user_persistent_token"
                                  referencedColumnNames="id"
-                                 referencedTableName="jhi_user"/>
+                                 referencedTableName="USER"/>
         <loadData
                   file="config/liquibase/data/authority.csv"
                   separator=";"
-                  tableName="jhi_authority"
+                  tableName="AUTHORITY"
                   usePreparedStatements="true">
             <column name="name" type="string"/>
         </loadData>
         <loadData
                   file="config/liquibase/data/user.csv"
                   separator=";"
-                  tableName="jhi_user"
+                  tableName="USER"
                   usePreparedStatements="true">
             <column name="activated" type="boolean"/>
             <column name="created_date" type="timestamp"/>
@@ -111,11 +111,11 @@
         <loadData
                   file="config/liquibase/data/user_authority.csv"
                   separator=";"
-                  tableName="jhi_user_authority"
+                  tableName="USER_AUTHORITY"
                   usePreparedStatements="true">
             <column name="user_id" type="numeric"/>
         </loadData>
-        <dropDefaultValue tableName="jhi_user" columnName="created_date" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="USER" columnName="created_date" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <changeSet author="jhipster" id="00000000000002" context="test">

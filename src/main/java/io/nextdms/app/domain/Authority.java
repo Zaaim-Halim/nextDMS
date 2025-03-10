@@ -5,13 +5,11 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Objects;
+import org.hibernate.annotations.Nationalized;
 import org.springframework.data.domain.Persistable;
 
-/**
- * A Authority.
- */
 @Entity
-@Table(name = "jhi_authority")
+@Table(name = "AUTHORITY")
 @JsonIgnoreProperties(value = { "new", "id" })
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Authority implements Serializable, Persistable<String> {
@@ -24,10 +22,12 @@ public class Authority implements Serializable, Persistable<String> {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
+    @Nationalized
+    @Column(name = "description", length = 500)
+    private String description;
+
     @Transient
     private boolean isPersisted;
-
-    // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public String getName() {
         return this.name;
@@ -36,6 +36,19 @@ public class Authority implements Serializable, Persistable<String> {
     public Authority name(String name) {
         this.setName(name);
         return this;
+    }
+
+    public Authority description(String description) {
+        this.setDescription(description);
+        return this;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public void setName(String name) {

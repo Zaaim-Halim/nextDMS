@@ -5,9 +5,15 @@ import javax.jcr.Repository;
 import javax.sql.DataSource;
 import org.apache.jackrabbit.oak.Oak;
 import org.apache.jackrabbit.oak.jcr.Jcr;
+import org.apache.jackrabbit.oak.plugins.document.LeaseCheckMode;
 import org.apache.jackrabbit.oak.plugins.document.rdb.RDBBlobStore;
 import org.apache.jackrabbit.oak.plugins.document.rdb.RDBDocumentNodeStoreBuilder;
 import org.apache.jackrabbit.oak.plugins.index.WhiteboardIndexEditorProvider;
+import org.apache.jackrabbit.oak.plugins.index.counter.NodeCounterEditorProvider;
+import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexEditorProvider;
+import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexProvider;
+import org.apache.jackrabbit.oak.plugins.index.reference.ReferenceIndexProvider;
+import org.apache.jackrabbit.oak.security.internal.SecurityProviderBuilder;
 import org.apache.jackrabbit.oak.spi.blob.BlobStore;
 import org.apache.jackrabbit.oak.spi.commit.WhiteboardEditorProvider;
 import org.apache.jackrabbit.oak.spi.query.WhiteboardIndexProvider;
@@ -48,6 +54,10 @@ public class OakConfiguration {
         try {
             return new Jcr(new Oak(nodeStore(dataSource)).withAsyncIndexing("async", 5), false)
                 .with(new OakRepositoryInitializer())
+                .with(SecurityProviderBuilder.newBuilder().build())
+                .with(new LuceneIndexEditorProvider())
+                .with(new ReferenceIndexProvider())
+                .with(new NodeCounterEditorProvider())
                 .with(new WhiteboardEditorProvider())
                 .with(new WhiteboardIndexProvider())
                 .with(new WhiteboardIndexEditorProvider())
@@ -55,7 +65,7 @@ public class OakConfiguration {
                 .withFastQueryResultSize(false)
                 .createRepository();
         } catch (Exception e) {
-            e.fillInStackTrace();
+            e.printStackTrace();
         }
         return null;
     }

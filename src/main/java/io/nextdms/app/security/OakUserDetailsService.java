@@ -12,6 +12,7 @@ import javax.jcr.SimpleCredentials;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.jackrabbit.api.security.user.UserManager;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 /**
  * Authenticate a user stored in Oak instead from database.
  */
+@ConditionalOnMissingBean(UserDetailsService.class)
 @Component("okakUserDetailsService")
 public class OakUserDetailsService implements UserDetailsService {
 
