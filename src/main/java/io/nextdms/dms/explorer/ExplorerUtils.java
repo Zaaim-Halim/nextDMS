@@ -3,9 +3,11 @@ package io.nextdms.dms.explorer;
 import io.nextdms.dto.explorer.JcrNode;
 import io.nextdms.dto.explorer.JcrProperty;
 import io.nextdms.dto.explorer.JcrValue;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Stream;
 import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
 
@@ -21,7 +23,7 @@ public class ExplorerUtils {
                 childNode.getName(),
                 childNode.getPath(),
                 childNode.getPrimaryNodeType().getName(),
-                List.of(node.getMixinNodeTypes()).stream().map(NodeType::getName).toList(),
+                Stream.of(node.getMixinNodeTypes()).map(NodeType::getName).toList(),
                 getProperties(childNode)
             );
             children.add(jcrNode);
@@ -157,5 +159,17 @@ public class ExplorerUtils {
                     throw new RepositoryException("Unsupported property type: " + prop.type());
             }
         }
+    }
+
+    public static String transformTofullTextSearchNonExclusiveQuery(String query) {
+        return String.format("SELECT * FROM [nt:base] WHERE CONTAINS(s.*, '%s')", query);
+    }
+
+    public static String transformToXPathSearchNonExclusiveQuery(String query, @NotBlank String targetPath) {
+        return String.format("%s//element(*, nt:base)[jcr:contains(., '%s')]", targetPath, query);
+    }
+
+    public static String transformSqlSearchNonExclusiveQuery(String query, @NotBlank String targetPath) {
+        return String.format("SELECT * FROM [nt:base] WHERE [nt:base] LIKE '%s%' AND CONTAINS(*, '%s')", targetPath, query);
     }
 }

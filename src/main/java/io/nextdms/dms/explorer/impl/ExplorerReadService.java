@@ -18,27 +18,22 @@ import org.slf4j.LoggerFactory;
 public class ExplorerReadService implements IExplorerReadService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExplorerReadService.class);
-    private final Session session;
-
-    public ExplorerReadService(Session session) {
-        this.session = session;
-    }
 
     @Override
-    public List<Map<String, List<JcrNode>>> getNodeTree(String path) throws RepositoryException {
+    public List<Map<String, List<JcrNode>>> getNodeTree(Session session, String path) throws RepositoryException {
         List<Map<String, List<JcrNode>>> returnList;
         try {
             if (null == path || path.equals("")) {
                 path = "/";
             }
             String[] pathSplit = path.split("/");
-            returnList = new ArrayList<Map<String, List<JcrNode>>>();
+            returnList = new ArrayList<>();
             Map<String, List<JcrNode>> treeAssociationMap = null;
-            StringBuffer pathBuilder = new StringBuffer();
+            StringBuilder pathBuilder = new StringBuilder();
             for (int i = 0; i < pathSplit.length; i++) {
-                treeAssociationMap = new HashMap<String, List<JcrNode>>();
-                pathBuilder.append(pathSplit[i].trim() + "/");
-                treeAssociationMap.put(pathBuilder.toString(), getNode(pathBuilder.toString()));
+                treeAssociationMap = new HashMap<>();
+                pathBuilder.append(pathSplit[i].trim()).append("/");
+                treeAssociationMap.put(pathBuilder.toString(), getNode(session, pathBuilder.toString()));
                 returnList.add(treeAssociationMap);
             }
         } catch (Exception e) {
@@ -50,13 +45,13 @@ public class ExplorerReadService implements IExplorerReadService {
     }
 
     @Override
-    public List<JcrNode> getNode(String path) throws RepositoryException {
+    public List<JcrNode> getNode(Session session, String path) throws RepositoryException {
         Node node = session.getNode(path);
         return ExplorerUtils.getChildreen(node);
     }
 
     @Override
-    public List<String> getAvailableNodeTypes() throws RepositoryException {
+    public List<String> getAvailableNodeTypes(Session session) throws RepositoryException {
         NodeTypeManager nodeTypeManager = session.getWorkspace().getNodeTypeManager();
         NodeTypeIterator nodeTypes = nodeTypeManager.getAllNodeTypes();
         List<String> nodeTypeNames = new ArrayList<>();
@@ -68,7 +63,7 @@ public class ExplorerReadService implements IExplorerReadService {
     }
 
     @Override
-    public List<String> getMixinNodeTypes() throws RepositoryException {
+    public List<String> getMixinNodeTypes(Session session) throws RepositoryException {
         NodeTypeManager nodeTypeManager = session.getWorkspace().getNodeTypeManager();
         NodeTypeIterator nodeTypes = nodeTypeManager.getMixinNodeTypes();
         List<String> nodeTypeNames = new ArrayList<>();
@@ -80,7 +75,7 @@ public class ExplorerReadService implements IExplorerReadService {
     }
 
     @Override
-    public List<JcrNode> fullTextSearch(String query) throws RepositoryException {
+    public List<JcrNode> fullTextSearch(Session session, String query) throws RepositoryException {
         QueryManager queryManager = session.getWorkspace().getQueryManager();
         Query fullTextQuery = queryManager.createQuery(query, Query.JCR_SQL2);
         QueryResult result = fullTextQuery.execute();
@@ -94,7 +89,7 @@ public class ExplorerReadService implements IExplorerReadService {
                 node.getPath(),
                 node.getPrimaryNodeType().getName(),
                 List.of(node.getMixinNodeTypes()).stream().map(NodeType::getName).toList(),
-                getProperties(node)
+                getProperties(session, node)
             );
             nodesList.add(jcrNode);
         }
@@ -102,7 +97,7 @@ public class ExplorerReadService implements IExplorerReadService {
     }
 
     @Override
-    public List<JcrNode> xpathSearch(String query) throws RepositoryException {
+    public List<JcrNode> xpathSearch(Session session, String query) throws RepositoryException {
         QueryManager queryManager = session.getWorkspace().getQueryManager();
         Query xpathQuery = queryManager.createQuery(query, Query.XPATH);
         QueryResult result = xpathQuery.execute();
@@ -116,7 +111,7 @@ public class ExplorerReadService implements IExplorerReadService {
                 node.getPath(),
                 node.getPrimaryNodeType().getName(),
                 List.of(node.getMixinNodeTypes()).stream().map(NodeType::getName).toList(),
-                getProperties(node)
+                getProperties(session, node)
             );
             nodesList.add(jcrNode);
         }
@@ -124,7 +119,7 @@ public class ExplorerReadService implements IExplorerReadService {
     }
 
     @Override
-    public List<JcrNode> sqlSearch(String query) throws RepositoryException {
+    public List<JcrNode> sqlSearch(Session session, String query) throws RepositoryException {
         QueryManager queryManager = session.getWorkspace().getQueryManager();
         Query sqlQuery = queryManager.createQuery(query, Query.JCR_SQL2);
         QueryResult result = sqlQuery.execute();
@@ -146,17 +141,17 @@ public class ExplorerReadService implements IExplorerReadService {
     }
 
     @Override
-    public List<Map<String, String>> getNodeTypeIcons() throws RepositoryException {
+    public List<Map<String, String>> getNodeTypeIcons(Session session) throws RepositoryException {
         return List.of();
     }
 
     @Override
-    public String getBrowsableContentFilterRegex() throws RepositoryException {
+    public String getBrowsableContentFilterRegex(Session session) throws RepositoryException {
         return "";
     }
 
     @Override
-    public Map<String, JcrProperty> getProperties(Node node) throws RepositoryException {
+    public Map<String, JcrProperty> getProperties(Session session, Node node) throws RepositoryException {
         return ExplorerUtils.getProperties(node);
     }
 }

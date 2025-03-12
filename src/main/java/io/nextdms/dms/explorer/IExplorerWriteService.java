@@ -5,7 +5,9 @@ import io.nextdms.dto.explorer.JcrProperty;
 import java.io.InputStream;
 import java.util.Map;
 import javax.jcr.RepositoryException;
+import org.springframework.stereotype.Service;
 
+@Service
 public interface IExplorerWriteService {
     String addNewNode(
         String path,
