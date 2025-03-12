@@ -1,14 +1,14 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet author="halimzaaim (generated)" id="1741649686531-1">
+    <changeSet author="halimzaaim (generated)" id="1741649686531-1" runOnChange="false">
       <preConditions onFail="MARK_RAN">
         <not>
           <tableExists tableName="JOURNAL"/>
         </not>
       </preConditions>
-      <dropTable tableName="JOURNAL"/>
+      <dropTable tableName="'JOURNAL'"/>
     </changeSet>
-    <changeSet author="halimzaaim (generated)" id="1741649686531-2">
+    <changeSet author="halimzaaim (generated)" id="1741649686531-2" runOnChange="false">
       <preConditions onFail="MARK_RAN">
         <not>
           <tableExists tableName="DATASTORE_META"/>
@@ -16,7 +16,7 @@
       </preConditions>
       <dropTable tableName="DATASTORE_META"/>
     </changeSet>
-  <changeSet author="halimzaaim (generated)" id="1741649686531-3">
+  <changeSet author="halimzaaim (generated)" id="1741649686531-3" runOnChange="false">
     <preConditions onFail="MARK_RAN">
       <not>
         <tableExists tableName="DATASTORE_DATA"/>
@@ -24,7 +24,7 @@
     </preConditions>
     <dropTable tableName="DATASTORE_DATA"/>
   </changeSet>
-  <changeSet author="halimzaaim (generated)" id="1741649686531-4">
+  <changeSet author="halimzaaim (generated)" id="1741649686531-4" runOnChange="false">
     <preConditions onFail="MARK_RAN">
       <not>
         <tableExists tableName="SETTINGS"/>
@@ -32,7 +32,7 @@
     </preConditions>
     <dropTable tableName="SETTINGS"/>
   </changeSet>
-  <changeSet author="halimzaaim (generated)" id="1741649686531-5">
+  <changeSet author="halimzaaim (generated)" id="1741649686531-5"  runOnChange="false">
     <preConditions onFail="MARK_RAN">
       <not>
         <tableExists tableName="NODES"/>
@@ -40,7 +40,7 @@
     </preConditions>
     <dropTable tableName="NODES"/>
   </changeSet>
-  <changeSet author="halimzaaim (generated)" id="1741649686531-6">
+  <changeSet author="halimzaaim (generated)" id="1741649686531-6" runOnChange="false">
     <preConditions onFail="MARK_RAN">
       <not>
         <tableExists tableName="CLUSTERNODES"/>

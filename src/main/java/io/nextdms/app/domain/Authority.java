@@ -9,7 +9,7 @@ import org.hibernate.annotations.Nationalized;
 import org.springframework.data.domain.Persistable;
 
 @Entity
-@Table(name = "AUTHORITY")
+@Table(name = "authority")
 @JsonIgnoreProperties(value = { "new", "id" })
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Authority implements Serializable, Persistable<String> {

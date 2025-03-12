@@ -2,6 +2,7 @@
 <databaseChangeLog
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    objectQuotingStrategy="QUOTE_ALL_OBJECTS"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <property name="now" value="now()" dbms="mysql"/>
     <property name="floatType" value="float" dbms="mysql"/>
@@ -9,7 +10,6 @@
     <property name="blobType" value="longblob" dbms="mysql"/>
     <property name="uuidType" value="varchar(36)" dbms="mysql"/>
     <property name="datetimeType" value="datetime(6)" dbms="mysql"/>
-
 
    <property name="now" value="current_timestamp" dbms="postgresql"/>
    <property name="floatType" value="float4" dbms="postgresql"/>
@@ -23,5 +23,4 @@
 
     <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250310233444_ignore_oak_tables.xml" relativeToChangelogFile="false"/>
-
 </databaseChangeLog>
