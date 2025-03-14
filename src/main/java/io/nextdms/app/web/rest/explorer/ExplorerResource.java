@@ -1,11 +1,15 @@
-package io.nextdms.app.web.explorer;
+package io.nextdms.app.web.rest.explorer;
 
 import io.nextdms.app.web.rest.errors.BadRequestAlertException;
+import io.nextdms.app.web.rest.explorer.dto.NodeDto;
+import io.nextdms.app.web.rest.explorer.dto.SearchDto;
 import io.nextdms.dms.SessionUtils;
 import io.nextdms.dms.config.OakProperties;
 import io.nextdms.dms.explorer.ExplorerUtils;
 import io.nextdms.dms.explorer.IExplorerReadService;
 import io.nextdms.dms.explorer.IExplorerWriteService;
+import io.nextdms.dms.explorer.query.IQueryService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
@@ -32,17 +36,20 @@ public class ExplorerResource {
     Logger LOG = org.slf4j.LoggerFactory.getLogger(ExplorerResource.class);
     private final IExplorerReadService explorerReadService;
     private final IExplorerWriteService explorerWriteService;
+    private final IQueryService queryService;
     private final OakProperties oakProperties;
     private final Repository repository;
 
     public ExplorerResource(
         IExplorerReadService explorerReadService,
         IExplorerWriteService explorerWriteService,
+        IQueryService queryService,
         OakProperties oakProperties,
         Repository repository
     ) {
         this.explorerReadService = explorerReadService;
         this.explorerWriteService = explorerWriteService;
+        this.queryService = queryService;
         this.oakProperties = oakProperties;
         this.repository = repository;
     }
@@ -62,30 +69,54 @@ public class ExplorerResource {
             SessionUtils.ungetSession(session);
             return ResponseEntity.ok(result);
         } catch (RepositoryException e) {
-            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.root");
+            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fetch.root");
         }
     }
 
     /**
-     * Fetching node children
-     * @param path
+     * Fetching node tree
+     * @param nodeDto : path : path of the node, UUID : UUID of the node
      * @return
      */
     @RequestMapping("/node/childreen")
-    public ResponseEntity<?> nodeChildren(@RequestParam("path") String path) {
+    public ResponseEntity<?> nodeChildren(@Valid @org.springdoc.core.annotations.ParameterObject NodeDto nodeDto) {
         if (LOG.isDebugEnabled()) {
-            LOG.info("Fetching childreen for path: {}", path);
+            LOG.info("Fetching childreen for node : {}", nodeDto.toString());
         }
         try {
             Session session = SessionUtils.getSessionForExplorer(repository, oakProperties);
-            final var result = explorerReadService.getNode(session, path);
+            final var result = explorerReadService.getNode(session, nodeDto.path(), nodeDto.UUID());
             SessionUtils.ungetSession(session);
             return ResponseEntity.ok(result);
         } catch (RepositoryException e) {
-            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.nodeChilderen");
+            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fetch.nodeChilderen");
         }
     }
 
+    /**
+     * Fetching node properties
+     * @param nodeDto : path : path of the node, UUID : UUID of the node
+     * @return
+     */
+    @RequestMapping("/node/properties")
+    public ResponseEntity<?> getNodeProperties(@Valid @org.springdoc.core.annotations.ParameterObject NodeDto nodeDto) {
+        if (LOG.isDebugEnabled()) {
+            LOG.info("Fetching properties for node : {}", "");
+        }
+        try {
+            Session session = SessionUtils.getSessionForExplorer(repository, oakProperties);
+            final var result = explorerReadService.getProperties(session, nodeDto.path(), nodeDto.UUID());
+            SessionUtils.ungetSession(session);
+            return ResponseEntity.ok(result);
+        } catch (RepositoryException e) {
+            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fetch.mixinNodeTypes");
+        }
+    }
+
+    /**
+     * Fetching available node types
+     * @return
+     */
     @RequestMapping("/availables-node-types")
     public ResponseEntity<?> availableNodeTypes() {
         if (LOG.isDebugEnabled()) {
@@ -97,10 +128,14 @@ public class ExplorerResource {
             SessionUtils.ungetSession(session);
             return ResponseEntity.ok(result);
         } catch (RepositoryException e) {
-            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.availableNodeTypes");
+            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fetch.availableNodeTypes");
         }
     }
 
+    /**
+     * Fetching available mixin node types
+     * @return
+     */
     @RequestMapping("/availables-node-mixin-types")
     public ResponseEntity<?> availableMixinTypes() {
         if (LOG.isDebugEnabled()) {
@@ -112,20 +147,45 @@ public class ExplorerResource {
             SessionUtils.ungetSession(session);
             return ResponseEntity.ok(result);
         } catch (RepositoryException e) {
-            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.mixinNodeTypes");
+            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fetch.mixinNodeTypes");
+        }
+    }
+
+    /**
+     *
+     * @param pageable
+     * @param searchDto : query : a valid xpath, JCR-SQL2  query , type : query type supported values are : xpath, JCR-SQL2
+     * @return
+     */
+    @RequestMapping("/search")
+    public ResponseEntity<?> search(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
+        @org.springdoc.core.annotations.ParameterObject SearchDto searchDto
+    ) {
+        if (LOG.isDebugEnabled()) {
+            LOG.info("search for query: ' {} ' of type '{}'", searchDto.query(), searchDto.type());
+        }
+        try {
+            Session session = SessionUtils.getSessionForExplorer(repository, oakProperties);
+            final var result = queryService.search(session, searchDto.query(), searchDto.type(), pageable);
+            SessionUtils.ungetSession(session);
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), result);
+            return new ResponseEntity<>(result.getContent(), headers, HttpStatus.OK);
+        } catch (RepositoryException e) {
+            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fetch.search");
         }
     }
 
     /**
      * Full text search
      * @param pageable
-     * @param query
+     * @param query : jsut a text not an actual full text search query
      * @return
      */
     @RequestMapping("/full-text-search")
     public ResponseEntity<?> fullTextSearch(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
-        @RequestParam("query") @NotBlank(message = "query must not be blanck!") String query
+        @RequestParam("query") @NotBlank(message = "query must not be blank!") String query
     ) {
         if (LOG.isDebugEnabled()) {
             LOG.info("Fetching full text search for query: {}", query);
@@ -141,22 +201,22 @@ public class ExplorerResource {
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), result);
             return new ResponseEntity<>(result.getContent(), headers, HttpStatus.OK);
         } catch (RepositoryException e) {
-            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.fullTextSearch");
+            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fetch.fullTextSearch");
         }
     }
 
     /**
      * Xpath search
      * @param pageable
-     * @param query
+     * @param query : the query here is just a text not an actual xpath query
      * @param targetPath
      * @return
      */
     @RequestMapping("/x-path-search")
     public ResponseEntity<?> xpathSearch(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
-        @RequestParam("query") @NotBlank(message = "query must not be blanck!") String query,
-        @RequestParam("targetPath") @NotBlank(message = "target  path must not be blanck!") String targetPath
+        @RequestParam("query") @NotBlank(message = "query must not be blank!") String query,
+        @RequestParam("targetPath") @NotBlank(message = "target  path must not be blank!") String targetPath
     ) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Fetching xpath search for query: {}", query);
@@ -172,22 +232,22 @@ public class ExplorerResource {
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), result);
             return new ResponseEntity<>(result.getContent(), headers, HttpStatus.OK);
         } catch (RepositoryException e) {
-            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.xpathSearch");
+            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fetch.xpathSearch");
         }
     }
 
     /**
      * SQL search. might not be used in the explorer itself but can be used in the future
      * @param pageable
-     * @param query
+     * @param query : just a text not an actual sql query
      * @param targetPath
      * @return
      */
     @RequestMapping("/sql-search")
     public ResponseEntity<?> sqlSearch(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
-        @RequestParam("query") @NotBlank(message = "query must not be blanck!") String query,
-        @RequestParam("targetPath") @NotBlank(message = "target  path must not be blanck!") String targetPath
+        @RequestParam("query") @NotBlank(message = "query must not be blank!") String query,
+        @RequestParam("targetPath") @NotBlank(message = "target  path must not be blank!") String targetPath
     ) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Fetching sql search for query: {} under path : {}", query, targetPath);
@@ -203,7 +263,7 @@ public class ExplorerResource {
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), result);
             return new ResponseEntity<>(result.getContent(), headers, HttpStatus.OK);
         } catch (RepositoryException e) {
-            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.xpathSearch");
+            throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fetch.xpathSearch");
         }
     }
 }

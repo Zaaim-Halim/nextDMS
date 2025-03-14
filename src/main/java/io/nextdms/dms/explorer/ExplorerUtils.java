@@ -7,9 +7,17 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 public class ExplorerUtils {
 
@@ -174,5 +182,75 @@ public class ExplorerUtils {
     // TODO : add support for ordering (path, lastModified, etc)
     public static String transformSqlSearchNonExclusiveQuery(String query, @NotBlank String targetPath) {
         return String.format("SELECT * FROM [nt:base] WHERE [nt:base] LIKE '%s%' AND CONTAINS(*, '%s')", targetPath, query);
+    }
+
+    public static QueryResult createQuery(QueryManager queryManager, String queryStr, String queryType, Pageable pageable)
+        throws RepositoryException {
+        Query query = queryManager.createQuery(queryStr, queryType);
+        if (pageable != null) {
+            query.setLimit(pageable.getPageSize());
+            query.setOffset(pageable.getOffset());
+        }
+        if (pageable != null) {
+            query.setLimit(pageable.getPageSize());
+            query.setOffset(pageable.getOffset());
+        }
+        return query.execute();
+    }
+
+    public static List<JcrNode> getSearcResult(Session session, QueryResult queryResult) throws RepositoryException {
+        List<JcrNode> nodesList = new ArrayList<>();
+        NodeIterator nodes = queryResult.getNodes();
+        while (nodes.hasNext()) {
+            Node node = nodes.nextNode();
+            JcrNode jcrNode = new JcrNode(
+                node.getIdentifier(),
+                node.getName(),
+                node.getPath(),
+                node.getPrimaryNodeType().getName(),
+                Stream.of(node.getMixinNodeTypes()).map(NodeType::getName).toList(),
+                getProperties(node)
+            );
+            nodesList.add(jcrNode);
+        }
+        return nodesList;
+    }
+
+    public static <T> Page<T> transformToPage(List<T> content, Pageable pageable, int total) {
+        if (pageable != null) {
+            return new PageImpl<>(content, pageable, total);
+        } else {
+            return new PageImpl<>(content);
+        }
+    }
+
+    public static int getSearchTotalCount(QueryManager queryManager, Pageable pageable, String queryType, String query)
+        throws RepositoryException {
+        if (pageable == null) {
+            return 0;
+        } else {
+            return switch (queryType) {
+                case Query.JCR_SQL2:
+                    Query sqlQuery = queryManager.createQuery(transformToCountQuery(query), queryType);
+                    QueryResult sqlResult = sqlQuery.execute();
+                    yield (int) sqlResult.getNodes().getSize(); // we might need to change this to a more efficient way . and avoid trunckating
+                case Query.XPATH:
+                    Query xpathQuery = queryManager.createQuery(String.format("COUNT(%s)", query), queryType);
+                    QueryResult xpathResult = xpathQuery.execute();
+                    yield (int) xpathResult.getNodes().getSize();
+                default:
+                    yield 0;
+            };
+        }
+    }
+
+    public static String transformToCountQuery(String query) {
+        // Regular expression pattern to match 'SELECT' (case-insensitive),
+        // followed by any characters, and then 'FROM' (case-insensitive).
+        String regex = "(?i)SELECT\\s+.*?\\s+FROM";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(query);
+        // Replace the part between SELECT and FROM with newSelection
+        return matcher.replaceFirst("SELECT COUNT(*) FROM");
     }
 }

@@ -14,8 +14,9 @@ import org.springframework.stereotype.Service;
 @Service
 public interface IExplorerReadService {
     List<Map<String, List<JcrNode>>> getNodeTree(Session session, String path) throws RepositoryException;
-    List<JcrNode> getNode(Session session, String path) throws RepositoryException;
+    List<JcrNode> getNode(Session session, String path, String UUID) throws RepositoryException;
     Map<String, JcrProperty> getProperties(Session session, Node node) throws RepositoryException;
+    Map<String, JcrProperty> getProperties(Session session, String path, String uuid) throws RepositoryException;
     List<String> getAvailableNodeTypes(Session session) throws RepositoryException;
     List<String> getMixinNodeTypes(Session session) throws RepositoryException;
     Page<JcrNode> fullTextSearch(Session session, String query, Pageable pageable) throws RepositoryException;
