@@ -5,6 +5,9 @@ import io.nextdms.dms.explorer.IExplorerReadService;
 import io.nextdms.dto.explorer.JcrNode;
 import io.nextdms.dto.explorer.JcrProperty;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.jcr.*;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeIterator;
@@ -14,6 +17,9 @@ import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 public class ExplorerReadService implements IExplorerReadService {
 
@@ -75,69 +81,36 @@ public class ExplorerReadService implements IExplorerReadService {
     }
 
     @Override
-    public List<JcrNode> fullTextSearch(Session session, String query) throws RepositoryException {
+    public Page<JcrNode> fullTextSearch(Session session, String query, Pageable pageable) throws RepositoryException {
         QueryManager queryManager = session.getWorkspace().getQueryManager();
-        Query fullTextQuery = queryManager.createQuery(query, Query.JCR_SQL2);
-        QueryResult result = fullTextQuery.execute();
-        List<JcrNode> nodesList = new ArrayList<>();
-        NodeIterator nodes = result.getNodes();
-        while (nodes.hasNext()) {
-            Node node = nodes.nextNode();
-            JcrNode jcrNode = new JcrNode(
-                node.getIdentifier(),
-                node.getName(),
-                node.getPath(),
-                node.getPrimaryNodeType().getName(),
-                List.of(node.getMixinNodeTypes()).stream().map(NodeType::getName).toList(),
-                getProperties(session, node)
+        QueryResult result = this.createQuery(queryManager, query, Query.JCR_SQL2, pageable);
+        return this.transformToPage(
+                this.getSearcResult(session, result),
+                pageable,
+                getSearchTotalCount(queryManager, pageable, Query.JCR_SQL2, query)
             );
-            nodesList.add(jcrNode);
-        }
-        return nodesList;
     }
 
     @Override
-    public List<JcrNode> xpathSearch(Session session, String query) throws RepositoryException {
+    public Page<JcrNode> xpathSearch(Session session, String query, Pageable pageable) throws RepositoryException {
         QueryManager queryManager = session.getWorkspace().getQueryManager();
-        Query xpathQuery = queryManager.createQuery(query, Query.XPATH);
-        QueryResult result = xpathQuery.execute();
-        List<JcrNode> nodesList = new ArrayList<>();
-        NodeIterator nodes = result.getNodes();
-        while (nodes.hasNext()) {
-            Node node = nodes.nextNode();
-            JcrNode jcrNode = new JcrNode(
-                node.getIdentifier(),
-                node.getName(),
-                node.getPath(),
-                node.getPrimaryNodeType().getName(),
-                List.of(node.getMixinNodeTypes()).stream().map(NodeType::getName).toList(),
-                getProperties(session, node)
+        QueryResult result = this.createQuery(queryManager, query, Query.XPATH, pageable);
+        return this.transformToPage(
+                this.getSearcResult(session, result),
+                pageable,
+                getSearchTotalCount(queryManager, pageable, Query.XPATH, query)
             );
-            nodesList.add(jcrNode);
-        }
-        return nodesList;
     }
 
     @Override
-    public List<JcrNode> sqlSearch(Session session, String query) throws RepositoryException {
+    public Page<JcrNode> sqlSearch(Session session, String query, Pageable pageable) throws RepositoryException {
         QueryManager queryManager = session.getWorkspace().getQueryManager();
-        Query sqlQuery = queryManager.createQuery(query, Query.JCR_SQL2);
-        QueryResult result = sqlQuery.execute();
-        List<JcrNode> nodesList = new ArrayList<>();
-        NodeIterator nodes = result.getNodes();
-        while (nodes.hasNext()) {
-            Node node = nodes.nextNode();
-            JcrNode jcrNode = new JcrNode(
-                node.getIdentifier(),
-                node.getName(),
-                node.getPath(),
-                node.getPrimaryNodeType().getName(),
-                List.of(node.getMixinNodeTypes()).stream().map(NodeType::getName).toList(),
-                Collections.emptyMap() // Assuming properties are not needed for now
+        QueryResult result = this.createQuery(queryManager, query, Query.JCR_SQL2, pageable);
+        return this.transformToPage(
+                this.getSearcResult(session, result),
+                pageable,
+                getSearchTotalCount(queryManager, pageable, Query.JCR_SQL2, query)
             );
-            nodesList.add(jcrNode);
-        }
-        return nodesList;
     }
 
     @Override
@@ -153,5 +126,75 @@ public class ExplorerReadService implements IExplorerReadService {
     @Override
     public Map<String, JcrProperty> getProperties(Session session, Node node) throws RepositoryException {
         return ExplorerUtils.getProperties(node);
+    }
+
+    private QueryResult createQuery(QueryManager queryManager, String queryStr, String queryType, Pageable pageable)
+        throws RepositoryException {
+        Query query = queryManager.createQuery(queryStr, queryType);
+        if (pageable != null) {
+            query.setLimit(pageable.getPageSize());
+            query.setOffset(pageable.getOffset());
+        }
+        if (pageable != null) {
+            query.setLimit(pageable.getPageSize());
+            query.setOffset(pageable.getOffset());
+        }
+        return query.execute();
+    }
+
+    private List<JcrNode> getSearcResult(Session session, QueryResult queryResult) throws RepositoryException {
+        List<JcrNode> nodesList = new ArrayList<>();
+        NodeIterator nodes = queryResult.getNodes();
+        while (nodes.hasNext()) {
+            Node node = nodes.nextNode();
+            JcrNode jcrNode = new JcrNode(
+                node.getIdentifier(),
+                node.getName(),
+                node.getPath(),
+                node.getPrimaryNodeType().getName(),
+                Stream.of(node.getMixinNodeTypes()).map(NodeType::getName).toList(),
+                getProperties(session, node)
+            );
+            nodesList.add(jcrNode);
+        }
+        return nodesList;
+    }
+
+    private <T> Page<T> transformToPage(List<T> content, Pageable pageable, int total) {
+        if (pageable != null) {
+            return new PageImpl<>(content, pageable, total);
+        } else {
+            return new PageImpl<>(content);
+        }
+    }
+
+    private int getSearchTotalCount(QueryManager queryManager, Pageable pageable, String queryType, String query)
+        throws RepositoryException {
+        if (pageable == null) {
+            return 0;
+        } else {
+            return switch (queryType) {
+                case Query.JCR_SQL2:
+                    Query sqlQuery = queryManager.createQuery(this.transformToCountQuery(query), queryType);
+                    QueryResult sqlResult = sqlQuery.execute();
+                    yield (int) sqlResult.getNodes().getSize(); // we might need to change this to a more efficient way . and avoid trunckating
+                case Query.XPATH:
+                    Query xpathQuery = queryManager.createQuery(String.format("COUNT(%s)", query), queryType);
+                    QueryResult xpathResult = xpathQuery.execute();
+                    yield (int) xpathResult.getNodes().getSize();
+                default:
+                    yield 0;
+            };
+        }
+    }
+
+    private String transformToCountQuery(String query) {
+        // Regular expression pattern to match 'SELECT' (case-insensitive),
+        // followed by any characters, and then 'FROM' (case-insensitive).
+        String regex = "(?i)SELECT\\s+.*?\\s+FROM";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(query);
+        // Replace the part between SELECT and FROM with newSelection
+        return matcher.replaceFirst("SELECT COUNT(*) FROM");
     }
 }

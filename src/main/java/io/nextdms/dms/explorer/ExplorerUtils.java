@@ -161,14 +161,17 @@ public class ExplorerUtils {
         }
     }
 
+    // TODO : add support for ordering (path, lastModified, etc)
     public static String transformTofullTextSearchNonExclusiveQuery(String query) {
         return String.format("SELECT * FROM [nt:base] WHERE CONTAINS(s.*, '%s')", query);
     }
 
+    // TODO : add support for ordering (path, lastModified, etc)
     public static String transformToXPathSearchNonExclusiveQuery(String query, @NotBlank String targetPath) {
         return String.format("%s//element(*, nt:base)[jcr:contains(., '%s')]", targetPath, query);
     }
 
+    // TODO : add support for ordering (path, lastModified, etc)
     public static String transformSqlSearchNonExclusiveQuery(String query, @NotBlank String targetPath) {
         return String.format("SELECT * FROM [nt:base] WHERE [nt:base] LIKE '%s%' AND CONTAINS(*, '%s')", targetPath, query);
     }

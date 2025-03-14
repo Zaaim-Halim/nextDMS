@@ -7,6 +7,8 @@ import java.util.Map;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,9 +18,9 @@ public interface IExplorerReadService {
     Map<String, JcrProperty> getProperties(Session session, Node node) throws RepositoryException;
     List<String> getAvailableNodeTypes(Session session) throws RepositoryException;
     List<String> getMixinNodeTypes(Session session) throws RepositoryException;
-    List<JcrNode> fullTextSearch(Session session, String query) throws RepositoryException;
-    List<JcrNode> xpathSearch(Session session, String query) throws RepositoryException;
-    List<JcrNode> sqlSearch(Session session, String query) throws RepositoryException;
+    Page<JcrNode> fullTextSearch(Session session, String query, Pageable pageable) throws RepositoryException;
+    Page<JcrNode> xpathSearch(Session session, String query, Pageable pageable) throws RepositoryException;
+    Page<JcrNode> sqlSearch(Session session, String query, Pageable pageable) throws RepositoryException;
     List<Map<String, String>> getNodeTypeIcons(Session session) throws RepositoryException;
     String getBrowsableContentFilterRegex(Session session) throws RepositoryException;
 }

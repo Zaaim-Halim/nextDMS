@@ -11,11 +11,20 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import org.slf4j.Logger;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.web.util.PaginationUtil;
 
+/**
+ * Explorer resource : This class is responsible for handling all the explorer related operations
+ * like fetching node tree, fetching node children, full text search, xpath search, sql search etc.
+ */
 @RestController
 @RequestMapping("/api/explorer")
 public class ExplorerResource {
@@ -38,6 +47,10 @@ public class ExplorerResource {
         this.repository = repository;
     }
 
+    /**
+     * Fetching root node
+     * @return
+     */
     @RequestMapping("/list-root")
     public ResponseEntity<?> listRoot() {
         if (LOG.isDebugEnabled()) {
@@ -53,6 +66,11 @@ public class ExplorerResource {
         }
     }
 
+    /**
+     * Fetching node children
+     * @param path
+     * @return
+     */
     @RequestMapping("/node/childreen")
     public ResponseEntity<?> nodeChildren(@RequestParam("path") String path) {
         if (LOG.isDebugEnabled()) {
@@ -98,23 +116,45 @@ public class ExplorerResource {
         }
     }
 
+    /**
+     * Full text search
+     * @param pageable
+     * @param query
+     * @return
+     */
     @RequestMapping("/full-text-search")
-    public ResponseEntity<?> fullTextSearch(@RequestParam("query") @NotBlank(message = "query must not be blanck!") String query) {
+    public ResponseEntity<?> fullTextSearch(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
+        @RequestParam("query") @NotBlank(message = "query must not be blanck!") String query
+    ) {
         if (LOG.isDebugEnabled()) {
             LOG.info("Fetching full text search for query: {}", query);
         }
         try {
             Session session = SessionUtils.getSessionForExplorer(repository, oakProperties);
-            final var result = explorerReadService.fullTextSearch(session, ExplorerUtils.transformTofullTextSearchNonExclusiveQuery(query));
+            final var result = explorerReadService.fullTextSearch(
+                session,
+                ExplorerUtils.transformTofullTextSearchNonExclusiveQuery(query),
+                pageable
+            );
             SessionUtils.ungetSession(session);
-            return ResponseEntity.ok(result);
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), result);
+            return new ResponseEntity<>(result.getContent(), headers, HttpStatus.OK);
         } catch (RepositoryException e) {
             throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.fullTextSearch");
         }
     }
 
+    /**
+     * Xpath search
+     * @param pageable
+     * @param query
+     * @param targetPath
+     * @return
+     */
     @RequestMapping("/x-path-search")
     public ResponseEntity<?> xpathSearch(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         @RequestParam("query") @NotBlank(message = "query must not be blanck!") String query,
         @RequestParam("targetPath") @NotBlank(message = "target  path must not be blanck!") String targetPath
     ) {
@@ -125,17 +165,27 @@ public class ExplorerResource {
             Session session = SessionUtils.getSessionForExplorer(repository, oakProperties);
             final var result = explorerReadService.xpathSearch(
                 session,
-                ExplorerUtils.transformToXPathSearchNonExclusiveQuery(query, targetPath)
+                ExplorerUtils.transformToXPathSearchNonExclusiveQuery(query, targetPath),
+                pageable
             );
             SessionUtils.ungetSession(session);
-            return ResponseEntity.ok(result);
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), result);
+            return new ResponseEntity<>(result.getContent(), headers, HttpStatus.OK);
         } catch (RepositoryException e) {
             throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.xpathSearch");
         }
     }
 
+    /**
+     * SQL search. might not be used in the explorer itself but can be used in the future
+     * @param pageable
+     * @param query
+     * @param targetPath
+     * @return
+     */
     @RequestMapping("/sql-search")
     public ResponseEntity<?> sqlSearch(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         @RequestParam("query") @NotBlank(message = "query must not be blanck!") String query,
         @RequestParam("targetPath") @NotBlank(message = "target  path must not be blanck!") String targetPath
     ) {
@@ -144,9 +194,14 @@ public class ExplorerResource {
         }
         try {
             Session session = SessionUtils.getSessionForExplorer(repository, oakProperties);
-            final var result = explorerReadService.sqlSearch(session, ExplorerUtils.transformSqlSearchNonExclusiveQuery(query, targetPath));
+            final var result = explorerReadService.sqlSearch(
+                session,
+                ExplorerUtils.transformSqlSearchNonExclusiveQuery(query, targetPath),
+                pageable
+            );
             SessionUtils.ungetSession(session);
-            return ResponseEntity.ok(result);
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), result);
+            return new ResponseEntity<>(result.getContent(), headers, HttpStatus.OK);
         } catch (RepositoryException e) {
             throw new BadRequestAlertException(e.getMessage(), "explorer", "explorer.error.failed.fertch.xpathSearch");
         }
