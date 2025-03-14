@@ -1,5 +1,7 @@
 package io.nextdms.app;
 
+import static org.springframework.boot.SpringApplication.getShutdownHandlers;
+
 import io.nextdms.app.config.ApplicationProperties;
 import io.nextdms.app.config.CRLFLogConverter;
 import jakarta.annotation.PostConstruct;
@@ -8,7 +10,9 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+import javax.jcr.Repository;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.api.JackrabbitRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -27,9 +31,11 @@ public class NextDmsApp {
     private static final Logger LOG = LoggerFactory.getLogger(NextDmsApp.class);
 
     private final Environment env;
+    private final Repository repository;
 
-    public NextDmsApp(Environment env) {
+    public NextDmsApp(Environment env, Repository repository) {
         this.env = env;
+        this.repository = repository;
     }
 
     /**
@@ -68,8 +74,17 @@ public class NextDmsApp {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(NextDmsApp.class);
         DefaultProfileUtil.addDefaultProfile(app);
-        Environment env = app.run(args).getEnvironment();
+        var appContext = app.run(args);
+        Environment env = appContext.getEnvironment();
         logApplicationStartup(env);
+        Runtime.getRuntime()
+            .addShutdownHook(
+                new Thread(() -> {
+                    var oakRepository = appContext.getBean(Repository.class);
+                    LOG.info("closing jcr repository....");
+                    ((JackrabbitRepository) oakRepository).shutdown();
+                })
+            );
     }
 
     private static void logApplicationStartup(Environment env) {

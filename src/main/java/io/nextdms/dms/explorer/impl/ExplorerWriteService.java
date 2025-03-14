@@ -14,21 +14,19 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ExplorerWriteService implements IExplorerWriteService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExplorerWriteService.class);
-    private final Session session;
-
-    public ExplorerWriteService(Session session) {
-        this.session = session;
-    }
 
     /**
      * Add new node and add mandatory jcr:content child node if the node type is a file type
      */
     @Override
     public String addNewNode(
+        Session session,
         String path,
         String newNodeName,
         String primaryNodeType,
@@ -67,7 +65,7 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String addMixinType(String path, String mixinType) throws RepositoryException {
+    public String addMixinType(Session session, String path, String mixinType) throws RepositoryException {
         if (null == path || path.equals("") || null == mixinType || mixinType.equals("")) {
             throw new RepositoryException("Mixin type not added. ");
         }
@@ -89,7 +87,7 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String removeMixinType(String path, String mixinType) throws RepositoryException {
+    public String removeMixinType(Session session, String path, String mixinType) throws RepositoryException {
         if (null == path || path.equals("") || null == mixinType || mixinType.equals("")) {
             throw new RepositoryException("Mixin type not removed. ");
         }
@@ -111,7 +109,7 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String moveNode(String sourcePath, String destinationPath) throws RepositoryException {
+    public String moveNode(Session session, String sourcePath, String destinationPath) throws RepositoryException {
         String sourceName;
         try {
             if (null == sourcePath || sourcePath.equals("") || null == destinationPath || destinationPath.equals("")) {
@@ -137,7 +135,7 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String renameNode(String sourcePath, String newName) throws RepositoryException {
+    public String renameNode(Session session, String sourcePath, String newName) throws RepositoryException {
         String oldName;
         String newPath;
         try {
@@ -158,18 +156,18 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String moveNodes(Map<String, String> nodeMap) throws RepositoryException {
+    public String moveNodes(Session session, Map<String, String> nodeMap) throws RepositoryException {
         return null;
     }
 
     @Override
-    public String cutAndPasteNode(String sourcePath, String destinationPath) throws RepositoryException {
+    public String cutAndPasteNode(Session session, String sourcePath, String destinationPath) throws RepositoryException {
         try {
             if (null == sourcePath || sourcePath.equals("") || null == destinationPath || destinationPath.equals("")) {
                 throw new Exception("Node not cut.");
             }
-            copyNode(sourcePath, destinationPath);
-            deleteNode(sourcePath);
+            copyNode(session, sourcePath, destinationPath);
+            deleteNode(session, sourcePath);
         } catch (Exception e) {
             LOG.error("Node not cut. ", e);
             throw new RepositoryException("Node not cut. " + e.getMessage());
@@ -179,7 +177,7 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String copyNode(String sourcePath, String destinationPath) throws RepositoryException {
+    public String copyNode(Session session, String sourcePath, String destinationPath) throws RepositoryException {
         String sourceName;
         try {
             if (null == sourcePath || sourcePath.equals("") || null == destinationPath || destinationPath.equals("")) {
@@ -205,12 +203,12 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String copyNodes(Map<String, String> nodeMap) throws RepositoryException {
+    public String copyNodes(Session session, Map<String, String> nodeMap) throws RepositoryException {
         return null;
     }
 
     @Override
-    public String deleteNode(String sourcePath) throws RepositoryException {
+    public String deleteNode(Session session, String sourcePath) throws RepositoryException {
         if (null == sourcePath || sourcePath.equals("")) {
             throw new RepositoryException("Node source missing");
         }
@@ -228,13 +226,13 @@ public class ExplorerWriteService implements IExplorerWriteService {
 
     //not used
     @Override
-    public String saveNodeDetails(String sourcePath, JcrNode jcrNode) throws RepositoryException {
+    public String saveNodeDetails(Session session, String sourcePath, JcrNode jcrNode) throws RepositoryException {
         return "";
     }
 
     // Properties
     @Override
-    public String addNewProperty(String sourcePath, String name, JcrProperty value) throws RepositoryException {
+    public String addNewProperty(Session session, String sourcePath, String name, JcrProperty value) throws RepositoryException {
         if (null == sourcePath || sourcePath.equals("")) {
             throw new RepositoryException("Property not added.");
         }
@@ -256,7 +254,7 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String deleteProperty(String sourcePath, String name) throws RepositoryException {
+    public String deleteProperty(Session session, String sourcePath, String name) throws RepositoryException {
         if (null == sourcePath || sourcePath.equals("") || null == name || name.equals("")) {
             throw new RepositoryException("Property not deleted.");
         }
@@ -277,7 +275,7 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String saveProperties(String sourcePath, JcrNode jcrNode) throws RepositoryException {
+    public String saveProperties(Session session, String sourcePath, JcrNode jcrNode) throws RepositoryException {
         if (null == jcrNode) {
             throw new RepositoryException("Properties not saved.");
         }
@@ -302,7 +300,7 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public String saveProperty(String sourcePath, String property, JcrProperty value) throws RepositoryException {
+    public String saveProperty(Session session, String sourcePath, String property, JcrProperty value) throws RepositoryException {
         if (null == sourcePath || null == property || null == value) {
             throw new RepositoryException("Property not saved.");
         }
@@ -322,7 +320,8 @@ public class ExplorerWriteService implements IExplorerWriteService {
         return "Successfully saved property " + sourcePath;
     }
 
-    public String savePropertyBinaryValue(String sourcePath, String property, InputStream inputStream) throws RepositoryException {
+    public String savePropertyBinaryValue(Session session, String sourcePath, String property, InputStream inputStream)
+        throws RepositoryException {
         if (null == sourcePath || null == property || null == inputStream) {
             throw new RepositoryException("Property not saved.");
         }
@@ -343,13 +342,13 @@ public class ExplorerWriteService implements IExplorerWriteService {
     }
 
     @Override
-    public Boolean addNodeTypes(String cnd) throws RepositoryException {
+    public Boolean addNodeTypes(Session session, String cnd) throws RepositoryException {
         // return new UnsupportedOperationException("Not implemented yet");
         return null;
     }
 
     @Override
-    public Boolean changeNodeTypeIconAssociation(String nodeType, String iconPath) throws RepositoryException {
+    public Boolean changeNodeTypeIconAssociation(Session session, String nodeType, String iconPath) throws RepositoryException {
         // return new UnsupportedOperationException("Not implemented yet");
         return null;
     }

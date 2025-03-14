@@ -12,7 +12,9 @@ import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
+@Service
 public class QueryService implements IQueryService {
 
     @Override

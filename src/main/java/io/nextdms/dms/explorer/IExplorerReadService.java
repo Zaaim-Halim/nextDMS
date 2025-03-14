@@ -9,9 +9,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
-@Service
 public interface IExplorerReadService {
     List<Map<String, List<JcrNode>>> getNodeTree(Session session, String path) throws RepositoryException;
     List<JcrNode> getNode(Session session, String path, String UUID) throws RepositoryException;
