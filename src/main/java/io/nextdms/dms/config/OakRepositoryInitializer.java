@@ -3,17 +3,15 @@ package io.nextdms.dms.config;
 import static org.apache.jackrabbit.JcrConstants.*;
 import static org.apache.jackrabbit.oak.api.Type.NAME;
 import static org.apache.jackrabbit.oak.plugins.index.IndexConstants.*;
-import static org.apache.jackrabbit.oak.plugins.index.IndexConstants.INDEX_DEFINITIONS_NAME;
 import static org.apache.jackrabbit.oak.plugins.memory.ModifiedNodeState.squeeze;
 import static org.apache.jackrabbit.oak.spi.nodetype.NodeTypeConstants.*;
+import static org.apache.jackrabbit.oak.spi.security.user.UserConstants.*;
 import static org.apache.jackrabbit.oak.spi.version.VersionConstants.REP_VERSIONSTORAGE;
 import static org.apache.jackrabbit.oak.spi.version.VersionConstants.VERSION_STORE_INIT;
 
 import com.sun.istack.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.jackrabbit.oak.InitialContent;
@@ -23,8 +21,11 @@ import org.apache.jackrabbit.oak.api.Type;
 import org.apache.jackrabbit.oak.plugins.index.IndexConstants;
 import org.apache.jackrabbit.oak.plugins.index.IndexUtils;
 import org.apache.jackrabbit.oak.plugins.index.counter.NodeCounterEditorProvider;
+import org.apache.jackrabbit.oak.plugins.index.lucene.IndexFormatVersion;
 import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexConstants;
 import org.apache.jackrabbit.oak.plugins.index.lucene.util.LuceneIndexHelper;
+import org.apache.jackrabbit.oak.plugins.index.search.FulltextIndexConstants;
+import org.apache.jackrabbit.oak.plugins.index.search.util.IndexHelper;
 import org.apache.jackrabbit.oak.plugins.memory.MemoryNodeStore;
 import org.apache.jackrabbit.oak.plugins.name.Namespaces;
 import org.apache.jackrabbit.oak.plugins.nodetype.write.NodeTypeRegistry;
@@ -35,7 +36,6 @@ import org.apache.jackrabbit.oak.spi.state.NodeBuilder;
 import org.apache.jackrabbit.oak.spi.state.NodeState;
 import org.apache.jackrabbit.oak.spi.state.NodeStore;
 import org.apache.jackrabbit.oak.spi.version.VersionConstants;
-import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +72,6 @@ public class OakRepositoryInitializer implements RepositoryInitializer {
 
         if (!builder.hasChildNode(IndexConstants.INDEX_DEFINITIONS_NAME)) {
             NodeBuilder index = IndexUtils.getOrCreateOakIndex(builder);
-
             NodeBuilder uuid = IndexUtils.createIndexDefinition(index, "uuid", true, true, List.of(JCR_UUID), null);
             uuid.setProperty("info", "Oak index for UUID lookup (direct lookup of nodes with the mixin 'mix:referenceable').");
             NodeBuilder nodetype = IndexUtils.createIndexDefinition(
@@ -102,15 +101,59 @@ public class OakRepositoryInitializer implements RepositoryInitializer {
                     "to decide whether traversing or using an index is faster."
                 );
 
+            if (!index.hasChildNode("authorizableId")) {
+                NodeBuilder authorizableId = IndexUtils.createIndexDefinition(
+                    index,
+                    "authorizableId",
+                    true,
+                    true,
+                    List.of(REP_AUTHORIZABLE_ID),
+                    List.of(NT_REP_AUTHORIZABLE)
+                );
+                authorizableId.setProperty(
+                    "info",
+                    "Oak index used by user management " + "to enforce uniqueness of rep:authorizableId property values."
+                );
+            }
+            if (!index.hasChildNode("principalName")) {
+                NodeBuilder principalName = IndexUtils.createIndexDefinition(
+                    index,
+                    "principalName",
+                    true,
+                    true,
+                    List.of(REP_PRINCIPAL_NAME),
+                    List.of(NT_REP_AUTHORIZABLE)
+                );
+                principalName.setProperty(
+                    "info",
+                    "Oak index used by user and principal management " +
+                    "to enforce uniqueness of rep:principalName property values and to search a principal by name."
+                );
+            }
+            if (!index.hasChildNode("repMembers")) {
+                NodeBuilder members = IndexUtils.createIndexDefinition(
+                    index,
+                    "repMembers",
+                    true,
+                    false,
+                    List.of(REP_MEMBERS),
+                    List.of(NT_REP_MEMBER_REFERENCES)
+                );
+                members.setProperty("info", "Oak index used by user management to lookup group membership.");
+            }
+
             // lucen index for full text search
-            if (!index.hasChildNode(LuceneIndexConstants.TYPE_LUCENE)) logger.debug("adding new Lucene index definition");
-            LuceneIndexHelper.newLuceneIndexDefinition(
-                index,
-                LuceneIndexConstants.TYPE_LUCENE,
-                this.includePropertyTypes(),
-                this.excludePropertyNames(),
-                "async"
-            );
+            if (!index.hasChildNode(LuceneIndexConstants.TYPE_LUCENE)) {
+                logger.debug("adding new Lucene index definition");
+                var nodeBuilder = LuceneIndexHelper.newLuceneIndexDefinition(
+                    index,
+                    LuceneIndexConstants.TYPE_LUCENE,
+                    this.includePropertyTypes(),
+                    this.excludePropertyNames(),
+                    "async"
+                );
+                nodeBuilder.setProperty(FulltextIndexConstants.COMPAT_MODE, IndexFormatVersion.V1.getVersion());
+            }
         }
 
         // squeeze node state before it is passed to store (OAK-2411)
@@ -167,7 +210,7 @@ public class OakRepositoryInitializer implements RepositoryInitializer {
 
     //TODO: change this to be configuralbe
     private Set<String> includePropertyTypes() {
-        return Set.of("String", "Binary");
+        return IndexHelper.JR_PROPERTY_INCLUDES;
     }
 
     private Set<String> excludePropertyNames() {
