@@ -12,17 +12,16 @@
         id="jh-create-entity"
         data-cy="entityCreateButton"
         class="btn btn-primary jh-create-entity create-authority"
-        [routerLink]="['/authority/new']"
-      >
+        [routerLink]="['/authority/new']">
         <fa-icon icon="plus"></fa-icon>
         <span jhiTranslate="nextDmsApp.adminAuthority.home.createLabel">Create a new Authority</span>
       </button>
     </div>
   </h2>
 
-  <jhi-alert-error></jhi-alert-error>
+  <app-alert-error></app-alert-error>
 
-  <jhi-alert></jhi-alert>
+  <app-alert></app-alert>
 
   @if (authorities?.length === 0) {
     <div class="alert alert-warning" id="no-result">

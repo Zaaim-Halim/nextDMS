@@ -6,7 +6,7 @@
       </h2>
 
       <div>
-        <jhi-alert-error></jhi-alert-error>
+        <app-alert-error></app-alert-error>
 
         @let nameRef = editForm.get('name')!;
         <div class="mb-3">
@@ -18,8 +18,7 @@
             id="field_name"
             data-cy="name"
             formControlName="name"
-            [readonly]="editForm.get('name')!.disabled"
-          />
+            [readonly]="editForm.get('name')!.disabled" />
           @if (nameRef.invalid && (nameRef.dirty || nameRef.touched)) {
             <div>
               @if (editForm.get('name')?.errors?.required) {
@@ -45,8 +44,7 @@
           id="save-entity"
           data-cy="entityCreateSaveButton"
           [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
-        >
+          class="btn btn-primary">
           <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
         </button>
       </div>

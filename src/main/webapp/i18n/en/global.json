@@ -144,5 +144,26 @@
       "not.image": "File was expected to be an image but was found to be \"{{ fileType }}\""
     }
   },
+  "timeAgo": {
+    "year": "{{years}} year(s) ago",
+    "month": "{{months}} month(s) ago",
+    "week": "{{weeks}} week(s) ago",
+    "day": "{{days}} day(s) ago",
+    "hour": "{{hours}} hour(s) ago",
+    "minute": "{{minutes}} minute(s) ago",
+    "second": "{{seconds}} second(s) ago"
+  },
+  "pagination": {
+    "first": "First",
+    "previous": "Previous",
+    "next": "Next",
+    "last": "Last"
+  },
+  "alert": {
+    "success": "Info Message",
+    "error": "Error Message",
+    "info": "Info Message",
+    "warning": "Warn Message"
+  },
   "footer": "This is your footer"
 }

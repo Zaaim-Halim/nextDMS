@@ -13,9 +13,8 @@
     </div>
   </h2>
 
-  <jhi-alert-error></jhi-alert-error>
-
-  <jhi-alert></jhi-alert>
+  <app-alert-error></app-alert-error>
+  <app-alert></app-alert>
 
   @if (users()) {
     <div class="table-responsive">
@@ -60,8 +59,7 @@
                     class="btn btn-success btn-sm"
                     (click)="setActive(user, false)"
                     [disabled]="!currentAccount() || currentAccount()?.login === user.login"
-                    jhiTranslate="userManagement.activated"
-                  >
+                    jhiTranslate="userManagement.activated">
                     Activated
                   </button>
                 }
@@ -88,8 +86,7 @@
                     type="submit"
                     [routerLink]="['./', user.login, 'edit']"
                     queryParamsHandling="merge"
-                    class="btn btn-primary btn-sm"
-                  >
+                    class="btn btn-primary btn-sm">
                     <fa-icon icon="pencil-alt"></fa-icon>
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
                   </button>
@@ -98,8 +95,7 @@
                     type="button"
                     (click)="deleteUser(user)"
                     class="btn btn-danger btn-sm"
-                    [disabled]="!currentAccount() || currentAccount()?.login === user.login"
-                  >
+                    [disabled]="!currentAccount() || currentAccount()?.login === user.login">
                     <fa-icon icon="times"></fa-icon>
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
                   </button>
@@ -124,8 +120,7 @@
           [maxSize]="5"
           [rotate]="true"
           [boundaryLinks]="true"
-          (pageChange)="transition()"
-        ></ngb-pagination>
+          (pageChange)="transition()"></ngb-pagination>
       </div>
     </div>
   }

@@ -2,11 +2,12 @@ import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { Alert, AlertService } from 'app/core/util/alert.service';
+import { AlertService } from 'app/core/util/alert.service';
+import { Alert } from '../../core/util/alert.model';
 
 @Component({
   standalone: true,
-  selector: 'jhi-alert',
+  selector: 'app-alert',
   templateUrl: './alert.component.html',
   imports: [CommonModule, NgbModule],
 })

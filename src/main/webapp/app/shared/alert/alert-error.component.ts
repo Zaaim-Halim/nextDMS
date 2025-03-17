@@ -5,13 +5,14 @@ import { CommonModule } from '@angular/common';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 
-import { Alert, AlertService } from 'app/core/util/alert.service';
+import { AlertService } from 'app/core/util/alert.service';
 import { EventManager, EventWithContent } from 'app/core/util/event-manager.service';
 import { AlertError } from './alert-error.model';
+import { Alert } from '../../core/util/alert.model';
 
 @Component({
   standalone: true,
-  selector: 'jhi-alert-error',
+  selector: 'app-alert-error',
   templateUrl: './alert-error.component.html',
   imports: [CommonModule, NgbModule],
 })

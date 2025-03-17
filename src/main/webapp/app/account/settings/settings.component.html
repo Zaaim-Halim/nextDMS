@@ -12,7 +12,7 @@
         <div class="alert alert-success" jhiTranslate="settings.messages.success"><strong>Settings saved!</strong></div>
       }
 
-      <jhi-alert-error></jhi-alert-error>
+      <app-alert-error></app-alert-error>
 
       @if (settingsForm.value.login) {
         <form name="form" (ngSubmit)="save()" [formGroup]="settingsForm" novalidate>
@@ -25,8 +25,7 @@
               name="firstName"
               placeholder="{{ 'settings.form.firstname.placeholder' | translate }}"
               formControlName="firstName"
-              data-cy="firstname"
-            />
+              data-cy="firstname" />
 
             @let firstNameRef = settingsForm.get('firstName')!;
             @if (firstNameRef.invalid && (firstNameRef.dirty || firstNameRef.touched)) {
@@ -61,8 +60,7 @@
               name="lastName"
               placeholder="{{ 'settings.form.lastname.placeholder' | translate }}"
               formControlName="lastName"
-              data-cy="lastname"
-            />
+              data-cy="lastname" />
 
             @let lastNameRef = settingsForm.get('lastName')!;
             @if (lastNameRef.invalid && (lastNameRef.dirty || lastNameRef.touched)) {
@@ -97,8 +95,7 @@
               name="email"
               placeholder="{{ 'global.form.email.placeholder' | translate }}"
               formControlName="email"
-              data-cy="email"
-            />
+              data-cy="email" />
 
             @let emailRef = settingsForm.get('email')!;
             @if (emailRef.invalid && (emailRef.dirty || emailRef.touched)) {
@@ -144,8 +141,7 @@
             [disabled]="settingsForm.invalid"
             class="btn btn-primary"
             data-cy="submit"
-            jhiTranslate="settings.form.button"
-          >
+            jhiTranslate="settings.form.button">
             Save
           </button>
         </form>

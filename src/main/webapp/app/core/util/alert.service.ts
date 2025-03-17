@@ -3,21 +3,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 
 import { translationNotFoundMessage } from 'app/config/translation.config';
-
-export type AlertType = 'success' | 'danger' | 'warning' | 'info';
-
-export interface Alert {
-  id: number;
-  type: AlertType;
-  message?: string;
-  translationKey?: string;
-  translationParams?: Record<string, unknown>;
-  timeout?: number;
-  toast?: boolean;
-  position?: string;
-  close?: (alerts: Alert[]) => void;
-}
-
+import { Alert } from './alert.model';
 @Injectable({
   providedIn: 'root',
 })

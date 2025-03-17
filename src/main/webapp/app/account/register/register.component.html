@@ -8,7 +8,7 @@
           <strong>Registration saved!</strong> Please check your email for confirmation.
         </div>
       }
-
+      <app-alert-error></app-alert-error>
       @if (error()) {
         <div class="alert alert-danger" jhiTranslate="register.messages.error.fail">
           <strong>Registration failed!</strong> Please try again later.
@@ -47,8 +47,7 @@
               placeholder="{{ 'global.form.username.placeholder' | translate }}"
               formControlName="login"
               data-cy="username"
-              #login
-            />
+              #login />
 
             @let loginRef = registerForm.get('login')!;
             @if (loginRef.invalid && (loginRef.dirty || loginRef.touched)) {
@@ -89,8 +88,7 @@
               name="email"
               placeholder="{{ 'global.form.email.placeholder' | translate }}"
               formControlName="email"
-              data-cy="email"
-            />
+              data-cy="email" />
 
             @let emailRef = registerForm.get('email')!;
             @if (emailRef.invalid && (emailRef.dirty || emailRef.touched)) {
@@ -129,8 +127,7 @@
               name="password"
               placeholder="{{ 'global.form.newpassword.placeholder' | translate }}"
               formControlName="password"
-              data-cy="firstPassword"
-            />
+              data-cy="firstPassword" />
 
             @let passwordRef = registerForm.get('password')!;
             @if (passwordRef.invalid && (passwordRef.dirty || passwordRef.touched)) {
@@ -169,8 +166,7 @@
               name="confirmPassword"
               placeholder="{{ 'global.form.confirmpassword.placeholder' | translate }}"
               formControlName="confirmPassword"
-              data-cy="secondPassword"
-            />
+              data-cy="secondPassword" />
 
             @let confirmPasswordRef = registerForm.get('confirmPassword')!;
             @if (confirmPasswordRef.invalid && (confirmPasswordRef.dirty || confirmPasswordRef.touched)) {
@@ -201,8 +197,7 @@
             [disabled]="registerForm.invalid"
             class="btn btn-primary"
             data-cy="submit"
-            jhiTranslate="register.form.button"
-          >
+            jhiTranslate="register.form.button">
             Register
           </button>
         </form>
