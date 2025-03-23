@@ -9,6 +9,7 @@ import io.nextdms.dms.explorer.ExplorerUtils;
 import io.nextdms.dms.explorer.IExplorerReadService;
 import io.nextdms.dms.explorer.IExplorerWriteService;
 import io.nextdms.dms.explorer.query.IQueryService;
+import io.nextdms.dto.NodeType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import javax.jcr.Repository;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,6 +54,15 @@ public class ExplorerResource {
         this.queryService = queryService;
         this.oakProperties = oakProperties;
         this.repository = repository;
+    }
+
+    /**
+     * Fetching supported node types
+     * @return List<NodeType>
+     */
+    @GetMapping("/supported-node-types")
+    public ResponseEntity<?> supportedNodeTypes() {
+        return ResponseEntity.ok(NodeType.values());
     }
 
     /**
