@@ -6,12 +6,16 @@ import io.nextdms.dms.explorer.IExplorerWriteService;
 import io.nextdms.dto.explorer.JcrNode;
 import io.nextdms.dto.explorer.JcrProperty;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Map;
 import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.nodetype.NodeTypeManager;
+import org.apache.jackrabbit.commons.cnd.CndImporter;
+import org.apache.jackrabbit.commons.cnd.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -157,7 +161,57 @@ public class ExplorerWriteService implements IExplorerWriteService {
 
     @Override
     public String moveNodes(Session session, Map<String, String> nodeMap) throws RepositoryException {
-        return null;
+        if (nodeMap == null || nodeMap.isEmpty()) {
+            throw new RepositoryException("No nodes specified for moving");
+        }
+
+        StringBuilder resultBuilder = new StringBuilder();
+        int successCount = 0;
+        int failCount = 0;
+
+        try {
+            for (Map.Entry<String, String> entry : nodeMap.entrySet()) {
+                String sourcePath = entry.getKey();
+                String destinationPath = entry.getValue();
+
+                try {
+                    if (sourcePath == null || sourcePath.isEmpty() || destinationPath == null || destinationPath.isEmpty()) {
+                        failCount++;
+                        continue;
+                    }
+
+                    int lastIndexOfSlash = sourcePath.lastIndexOf('/');
+                    String sourceName = sourcePath.substring(lastIndexOfSlash + 1);
+                    if (sourceName.indexOf('[') >= 0) {
+                        sourceName = sourceName.substring(0, sourceName.indexOf('['));
+                    }
+
+                    String targetPath;
+                    if (destinationPath.equals("/")) {
+                        targetPath = destinationPath + sourceName;
+                    } else {
+                        targetPath = destinationPath + "/" + sourceName;
+                    }
+
+                    session.move(sourcePath, targetPath);
+                    successCount++;
+                } catch (Exception e) {
+                    LOG.error("Failed to move node: " + sourcePath + " to " + destinationPath, e);
+                    failCount++;
+                }
+            }
+
+            session.save();
+            resultBuilder.append("Successfully moved ").append(successCount).append(" nodes");
+            if (failCount > 0) {
+                resultBuilder.append(", failed to move ").append(failCount).append(" nodes");
+            }
+        } catch (Exception e) {
+            LOG.error("Error during bulk move operation", e);
+            throw new RepositoryException("Error during bulk move operation: " + e.getMessage());
+        }
+
+        return resultBuilder.toString();
     }
 
     @Override
@@ -204,7 +258,57 @@ public class ExplorerWriteService implements IExplorerWriteService {
 
     @Override
     public String copyNodes(Session session, Map<String, String> nodeMap) throws RepositoryException {
-        return null;
+        if (nodeMap == null || nodeMap.isEmpty()) {
+            throw new RepositoryException("No nodes specified for copying");
+        }
+
+        StringBuilder resultBuilder = new StringBuilder();
+        int successCount = 0;
+        int failCount = 0;
+
+        try {
+            for (Map.Entry<String, String> entry : nodeMap.entrySet()) {
+                String sourcePath = entry.getKey();
+                String destinationPath = entry.getValue();
+
+                try {
+                    if (sourcePath == null || sourcePath.isEmpty() || destinationPath == null || destinationPath.isEmpty()) {
+                        failCount++;
+                        continue;
+                    }
+
+                    int lastIndexOfSlash = sourcePath.lastIndexOf('/');
+                    String sourceName = sourcePath.substring(lastIndexOfSlash + 1);
+                    if (sourceName.indexOf('[') >= 0) {
+                        sourceName = sourceName.substring(0, sourceName.indexOf('['));
+                    }
+
+                    String targetPath;
+                    if (destinationPath.equals("/")) {
+                        targetPath = destinationPath + sourceName;
+                    } else {
+                        targetPath = destinationPath + "/" + sourceName;
+                    }
+
+                    session.getWorkspace().copy(sourcePath, targetPath);
+                    successCount++;
+                } catch (Exception e) {
+                    LOG.error("Failed to copy node: " + sourcePath + " to " + destinationPath, e);
+                    failCount++;
+                }
+            }
+
+            session.save();
+            resultBuilder.append("Successfully copied ").append(successCount).append(" nodes");
+            if (failCount > 0) {
+                resultBuilder.append(", failed to copy ").append(failCount).append(" nodes");
+            }
+        } catch (Exception e) {
+            LOG.error("Error during bulk copy operation", e);
+            throw new RepositoryException("Error during bulk copy operation: " + e.getMessage());
+        }
+
+        return resultBuilder.toString();
     }
 
     @Override
@@ -343,13 +447,63 @@ public class ExplorerWriteService implements IExplorerWriteService {
 
     @Override
     public Boolean addNodeTypes(Session session, String cnd) throws RepositoryException {
-        // return new UnsupportedOperationException("Not implemented yet");
-        return null;
+        if (cnd == null || cnd.isEmpty()) {
+            throw new RepositoryException("CND content is missing");
+        }
+
+        try {
+            // Use Jackrabbit's CndImporter to register node types from the CND string
+            NodeTypeManager nodeTypeManager = session.getWorkspace().getNodeTypeManager();
+            CndImporter.registerNodeTypes(new StringReader(cnd), session);
+            session.save();
+            LOG.info("Successfully registered node types from CND");
+            return true;
+        } catch (ParseException e) {
+            LOG.error("Failed to parse CND content", e);
+            throw new RepositoryException("Failed to parse CND content: " + e.getMessage());
+        } catch (Exception e) {
+            LOG.error("Failed to register node types", e);
+            throw new RepositoryException("Failed to register node types: " + e.getMessage());
+        }
     }
 
     @Override
     public Boolean changeNodeTypeIconAssociation(Session session, String nodeType, String iconPath) throws RepositoryException {
-        // return new UnsupportedOperationException("Not implemented yet");
-        return null;
+        if (nodeType == null || nodeType.isEmpty() || iconPath == null || iconPath.isEmpty()) {
+            throw new RepositoryException("Node type or icon path is missing");
+        }
+
+        try {
+            // Check if the node type exists
+            if (!session.getWorkspace().getNodeTypeManager().hasNodeType(nodeType)) {
+                throw new RepositoryException("Node type does not exist: " + nodeType);
+            }
+
+            // Store the icon association in a system node
+            // Assuming there's a specific location where icon associations are stored
+            String iconAssociationPath = "/system/nodetype-icons";
+
+            // Check if the icon association path exists, create if it doesn't
+            if (!session.nodeExists(iconAssociationPath)) {
+                Node rootNode = session.getRootNode();
+                Node systemNode;
+                if (!rootNode.hasNode("system")) {
+                    systemNode = rootNode.addNode("system", "nt:folder");
+                } else {
+                    systemNode = rootNode.getNode("system");
+                }
+                systemNode.addNode("nodetype-icons", "nt:unstructured");
+            }
+
+            Node iconAssociationNode = session.getNode(iconAssociationPath);
+            iconAssociationNode.setProperty(nodeType, iconPath);
+
+            session.save();
+            LOG.info("Successfully associated icon with node type: " + nodeType + " -> " + iconPath);
+            return true;
+        } catch (Exception e) {
+            LOG.error("Failed to associate icon with node type", e);
+            throw new RepositoryException("Failed to associate icon with node type: " + e.getMessage());
+        }
     }
 }
